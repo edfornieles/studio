@@ -1,0 +1,21 @@
+{% extends "studio_base.html" %}
+{% block title %}New work · Studio{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('studio_index') }}">← Dashboard</a></p>
+<h1 class="page-head">New work</h1>
+
+<form class="studio-form narrow" method="post" action="{{ url_for('studio_new') }}">
+  <label>Title<input name="title" required autofocus></label>
+  <label>Date<input name="date" placeholder="e.g. 23 May – 6 July 2024"></label>
+  <div class="row">
+    <label>Status<select name="status">{% for s in statuses %}<option {{ 'selected' if s=='completed' }}>{{ s }}</option>{% endfor %}</select></label>
+    <label>Confidentiality<select name="confidentiality">{% for l in levels %}<option {{ 'selected' if l=='public' }}>{{ l }}</option>{% endfor %}</select></label>
+  </div>
+  <label>Type (sub-heading under “The Work”)<input name="work_type" list="worktypes" value="Exhibitions"></label>
+  <datalist id="worktypes">{% for t in work_types %}<option value="{{ t }}">{% endfor %}</datalist>
+  <label class="check"><input type="checkbox" name="public_website_visible" checked> Show on public site</label>
+  <label>Short description<textarea name="description" rows="6" placeholder="A sentence or two about the work…"></textarea></label>
+  <button type="submit">Create work</button>
+  <p class="hint">After creating, you can add more text, images and PDFs. Everything is saved into the dataset (and the training set).</p>
+</form>
+{% endblock %}

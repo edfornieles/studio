@@ -1,0 +1,14 @@
+# Despicable Me 2 — ArtReview review by Jonathan Griffin
+_source: https://artreview.com/october-2013-review-ed-fornieles/ · accessed 2026-06-10_
+
+By Jonathan Griffin | Reviews | October 22, 2013 (first published in the October 2013 issue)
+
+If Britney Rivers didn't exist, someone would have to invent her. She is the epitome of Generation Y narcissism and vapidity, a creature who gives fullest expression to her life on Facebook and Instagram, whose pronouncements are specially keyed to half-bored, half-horny social media browsers. Her Tweets include such gems as: "Cute guy emails 2 ask me out on coffee date but 'sent from droid' so now..." I'm Facebook friends with her. You should be too.
+
+In actual fact, Britney Rivers only exists because Ed Fornieles invented her. It remains unclear just how far the fiction of her identity stretches. 'Selfies' on Instagram show that Rivers is a flesh-and-blood, twenty-something woman, but I suspect that Fornieles holds the passwords to her online profiles. For Fornieles's exhibition Despicable Me 2, Rivers is someway between a virtual muse and a subjective lens picked up by the artist. He would like us to believe that it is she who is calling the aesthetic shots, even if she only truly exists in his imagination.
+
+Surprisingly, perhaps, the show contains no digital media, unless one counts the portraits installed at the back of the space: headshots of three young women and one man, culled from the Internet, with teeth or eyebrows digitally erased. Photographs on shaped lightboxes also punctuate the sprawl of objects placed on rectangles of carpet. Pink and blue wads of chewed bubblegum, titled Not Fade Away (all works 2013), float like clouds high on the wall. The First Time is a seven-foot-high lightbox displaying a photograph of an erect penis standing like a sentry at the entrance to the melee.
+
+Aside from close-up self-exposure, what else appeals to Britney Rivers? Candy colours, mirrors, glitter, confetti and fairy lights, apparently. The works' obvious relation to infantilism is conflicted and self-mocking. Pony Hoof consists of a large soft toy brutally impaled – not even hanged! – on a gallows. Several sculptures include casts of Stewie Griffin, the baby from the animation Family Guy, debased with cigarette butts, glitter and a snap of a beefcake in his briefs.
+
+There are around 40 artworks on the checklist, but it is hard to discern which piece belongs to which title. This is surely deliberate. The model of network culture is innate for Rivers's generation – a generation to which, give or take a few years, Fornieles also belongs. Despicable Me 2 is less an ideological critique than an ambivalent embodiment of Rivers and her culture. Is it she or he who is despicable? Probably both. As Rivers/Fornieles declares in the press release: "It's all about jokes, lolz and likes. Everything else is bullshit."

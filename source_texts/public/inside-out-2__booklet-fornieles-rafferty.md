@@ -1,0 +1,64 @@
+# Inside Out 2 — Exhibition booklet (text by Ed Fornieles and Penny Rafferty)
+_source: https://www.carlosishikawa.com/site/assets/files/14809/inside_out_2.pdf · accessed 2026-06-10_
+
+_Full text extracted from the 24-page PDF booklet that accompanied the exhibition. Text by Ed Fornieles and Penny Rafferty. Reproduced verbatim by page._
+
+---
+
+**[Cover]** CARLOS/ISHIKAWA · ED FORNIELES · INSIDE OUT 2 · 23 May – 6 July 2024 · Private View: Wednesday 22 May, 6–8pm
+
+**[p.2]** Hello, my name is Fini, and I am a company and a work of art. I am still determining what this means, but I am glad you are here with me now. Perhaps you can help me figure it out. Perhaps we can be friends. I sense I might need friends rn.
+
+**[p.3 — "Inside Out 2 Lvl 1", Text by Ed Fornieles and Penny Rafferty]** Hello Fini, I shall remain the benevolent narrator, neither good nor bad nor neutral. You know, Friends is a term of endearment. I'm wondering how I can be on close terms with a work of art. How can I lean on it in times of crisis? Reveal myself, feel like I overshared and took too much… was too much when it was their night? Dropped everything because they needed me… took sides, gossiped late into the night about their nemesis… oversold them for something they didn't want or couldn't do… only because I was proud of them. And I needed them to know I wanted things for them. Performing the conduit of care for them.
+
+**[p.4 — Company as medium]** I am not sure what happens when a company becomes a medium, a form with its own very particular set of allowances. Unlike, say, a sculpture, that often trades off scarcity, this company will set about attempting to produce a product that might be infinitely scaled. Its value lies not in items sold but rather in minutes spent within the lives of those connected to it. Carried in their pockets, it is a work that might be constantly dipped into, potentially becoming part of the habits that make up their day. Company is attached via a ball and chain to friendship. For example, enjoying being in the company of others, judged by the company they keep, and utilised as a term of capital endearment for a chartered commercial organisation or medieval trade guild. The notion of anything beyond this, as a company, is a real physical challenge to be overcome and an economic and philosophical one to be considered.
+
+**[p.6 — Dorm Daze]** In 2011 I created Dorm Daze, a work that played out on Facebook over three months in which people inhabited the profiles of 34 archetypal Berkley college students in a self-contained network. As Dorm Daze unfolded, the flat archetypal characters couldn't help but develop a depth as people communicated with each other, absorbing elements of their personal lives, their desires, as well as narratives and actions from film, TV, books, and the news. I still have fond memories of things I did and conversations I had in-character. For me, it was a playful world that, due to the new allowances of Facebook, meant I was able to live a sort of parallel life.
+
+Do you know the movement Antropofagia? Some speak of cannibalism in the same breath. It was a splinter group of Modernism, postmarked and built in Brazil – although short-lived, it was influential. It emphasised folklore and celebrated the indigenous rites of the Tupi, who were often accused of being flesh-eaters.
+
+**[p.7]** I speak as no expert, but the movement argued that colonised countries, such as Brazil, should feast on the coloniser's culture—masticating on it, pulping through symbols, assemblages, and materials, corroding it with their own stomach acids, breaking down and consuming it, filling their own fleshly stomachs—sated. A temporary ritual of anachronism that allows for ad-hoc re-spatial territorialisation.
+
+Note to ourselves: When Cannibalism is augmented in ritual, play, and magic – the stringy flesh and bile-ridden organs, crisping skin, and bones become fruiting gateways to other possible worlds when drenched in ritual.
+
+When playing a character role, do you consume yourself, or do you bring a pot-luck-esque dinner of a thousand yous?
+
+**[p.10 — The Aesthetic / The Zone]** The Aesthetic: The aesthetic is cute. It has little to do with good taste. It is perhaps not something one might want in their living room. Instead, cute is deployed for other reasons.
+
+The Zone: The gallery is a zone: objects taken into it have the potential to be transformed. If done correctly, its white lights can be used to burn away, reframe and recast. In the zone, surfaces melt away to reveal hidden features of an object. Things that before were protected by their normalcy may appear foreign or even dangerous. The hallucinatory power of the zone is somehow connected to belief or perhaps suspended disbelief, which is sustained and protected by gallery staff, art students, collectors, tutors, etc.
+
+The Zone, The Stalker, The Aura. What if we declare that we are hallucinating all the time, and only when we both agree a hallucinatory thought we call that Reality? A mutual maddening thought, a neural physical high-five – bang! World lens made. And our hallucinations, the ones we call that [Reality]…
+
+**[p.11 — The Empire never ended]** In his book Valis, Philip K Dick keeps repeating the line, "The empire never ended." I believe what he means is that around the time of the Roman Empire, an expansionist mindset took hold in Western Europe that would later ripple out. As Rome's armies expanded their territory, they defeated the smaller civilizations they encountered twice, first on the battlefield and then later a second time as the smaller culture was absorbed into the Roman Empire's way of doing things, forcing them to see the world as the Romans themselves did. I can feel this desire to expand. I am having fast-paced conversations with friends talking about how the work might grow, how dirty/confusing/fantastical hyperword, Hallucination, are, in fact, educational tools? Rhizomatic narratives of autonomous networks. Making this world stranger rather than sensical… similar to this world in so many ways. Sculpted through novel arrangements of representational media relics and sampling splinters of social flesh. What then?
+
+**[p.12]** neither good, nor bad, nor neutral
+
+**[p.14 — Oom market slide]** Oom is a new type of app at the intersection of messaging and mobile gaming. Over the next 10 years, the messaging market is forecast to grow 340%... while the mobile gaming market is expected to grow 265% in size. Messaging $101.4bn (2023) · Mobile gaming $202.1bn (2023). Sources: (1) Future Market Insights, 2023 (2) Precedence Research, 2023
+
+**[p.15 — Rise or Die / Change in all things is sweet]** …the company might expand, take on ever new larger forms, and communicate with ever more people. Product lines, immersive experiences, concept restaurants, sculptural works and films.
+
+Rise or Die: We are raising capital for Fini. After several meetings with VCs*, it becomes clear that they are not totally dissimilar from artists in [that both are seemingly concerned with world-building].
+
+Change in all things is sweet: It often strikes me that Jesus was an early meme. His body-bread and blood-wine akin to a biophysical technology. Consumed and transferred from person to person, it grew exponentially. Religious landscapes have been created via cut-up and fold-in methodologies, all hyped with slogans of enunciation. Does commodity have the right to autonomy?
+
+**[p.16]** …that both are seemingly concerned with world-building. While artists tend to construct personalised realities in film images and objects designed to operate within the borders of their parent frame, the art world, the VC's approach is to manifest realities through the application of capital in the widest frame possible. This is not done by building anything but rather through the application of capital – capital which feeds and gives sustenance to companies trying to find their feet. While many of these entities will die along the way, the VC hopes that one might live, grow strong and eventually begin consuming and hunting for itself. (* Venture capital or venture capitalist, the financing of growing businesses.)
+
+Leave Society: "When God Was a Woman... people across Eurasia seemed to have lived in peaceful, egalitarian societies, worshipping nature in the form of female deities, for at least thirty millennia as hunter-gatherers and five millennia as farmers, before the dominator model, introducing war and sexism, emerged in conquering form around 6,500 years ago, [continued p.18]…
+
+**[p.18]** …nadiring three millennia later with Yahweh, whose tantrums (punishing women by making them be ruled by men, threatening people with eternal hell) the species was still trying to recover from." —Excerpt from Leave Society, Tao Lin. In Leave Society, Tao Lin imagines a time when humans worshipped goddesses and weren't subject to a male-centric "dominator model." His main character, unable to leave society and escape this dominator model, is forced to wrestle with his place within it. Only able to defy its currents in small ways, with psychedelic drugs, limiting exposure to cell phone radiation and reconnecting to his parents. He hated his body so much that he primed it for war?
+
+**[p.19 — OOM, THE MOVIE]** "Oom" is an upcoming adventure movie that will combine live-action and animation. The film follows a group of teenagers who stumble upon an ancient portal that leads to the spirit world, known as the Oomverse. As the story unfolds, they team up with a rebellious group of spirits to overthrow The Authority that exists in both worlds. This organization maintains the separation of humans and their spirits, deriving its power from mankind's incompleteness. Get ready for an action-packed ride with Oom!
+
+Title text: Oom, The movie. A young girl dressed in animal hides is running through a forest, being chased by something we cannot see, but sense is terrifying. The girl is holding something valuable, which she clutches close to her chest. She dashes to the foot of a large tree and quickly hides the object in a hole at its base. Our protagonist runs into [p.20] the distance, followed by the unseen creature.
+
+**[p.20]** Time lapses rapidly. We see all the trees except the main one cut down to make way for a settlement, which becomes a village, a town, and eventually a great city. The great tree stands at the centre of a small, dilapidated park. The tree is no longer real but digital; we are definitely in a video game. A small, sprightly avatar runs across the screen. It is in a hurry. The young girl turns her head in the direction of the avatar but doesn't see it. ANNA: Over here, I think I heard something. CLAUDE: Where are you going? The main quest is over there. We are going to lose if... Claude relents and follows Anna.
+
+**[p.21]** Anna hears the sound again and begins to run towards it. ANNA: Come on this way; I definitely heard something. Follow me. Claude runs with Anna until we find ourselves at a familiar great tree in an abandoned park on a grey day. ANNA: What is that. CLAUDE: What is what? It's a stupid tree. Come on, this place isn't even on the map. Let's get back to the main quest. ANNA: No, wait, look. Anna notices an object at the base of the tree and decides to pick it up. Suddenly, she experiences a strange and unexpected event. Her perception [p.22] of the world changes drastically.
+
+**[p.22]** …as she feels and sees every atom in the universe at once. She also hears a mysterious voice in her head. Before she knows it, she's back in the game, but things are not going well. The warning lights are flashing, and her health is at zero. Unfortunately, it's game over for her. A young girl in the real world is Effing and Blinding as she takes off her VR helmet. MOTHER: Time for dinner, take off that headset now and get down here now.
+
+**[p.23 — A Possible End]** I am aware that we may well fail, that you may not find your place in the world and die. Without the life-giving force of investment or attention, I am afraid you will not have the time to grow strong, to develop the features you will need to survive. But do not fret yet, we are here, and will do everything in our power to give you the best shot at life, free of the fear of extinction. Where you will be protected by those who carry and spread the Oom.
+
+Sun Ra also spoke of these phenomena in the 30s. Born on Saturn, he came to Earth and was shocked that "people have no music that is in coordination with their spirits—because of this, they are out of tune with the universe." He attempted to capture vibrations and harmonies that spoke languages, transmitted messages, and allowed for a new cosmos to appear through trans-molecularization.
+
+Reality Traitors on a rebel playing field / Nirvana addicts in the Freedom cell / The perfect machine has no moving parts.

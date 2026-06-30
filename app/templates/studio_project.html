@@ -1,0 +1,122 @@
+{% extends "studio_base.html" %}
+{% block title %}{{ fm.title }} · Studio{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('studio_index') }}">← Dashboard</a></p>
+<h1 class="page-head">{{ fm.title }}</h1>
+<p class="sub"><a href="{{ url_for('site_exhibition', pid=pid) }}" target="_blank" rel="noopener">View work page ↗</a>
+   · {{ fm.confidentiality }} · {{ 'visible on site' if fm.public_website_visible=='true' else 'hidden' }}</p>
+
+<div class="studio-cols">
+  <section class="studio-card">
+    <h2>Details &amp; blurb</h2>
+    <form class="studio-form" method="post" action="{{ url_for('studio_project_edit', pid=pid) }}">
+      <label>Title<input name="title" value="{{ fm.title }}"></label>
+      <label>Date<input name="date" value="{{ fm.date }}"></label>
+      <div class="row">
+        <label>Status<select name="status">{% for s in statuses %}<option {{ 'selected' if s==fm.status }}>{{ s }}</option>{% endfor %}</select></label>
+        <label>Confidentiality<select name="confidentiality">{% for l in levels %}<option {{ 'selected' if l==fm.confidentiality }}>{{ l }}</option>{% endfor %}</select></label>
+      </div>
+      <label>Type (sub-heading under “The Work”)<input name="work_type" list="worktypes" value="{{ fm.work_type or 'Exhibitions' }}"></label>
+      <datalist id="worktypes">{% for t in work_types %}<option value="{{ t }}">{% endfor %}</datalist>
+      <label class="check"><input type="checkbox" name="public_website_visible" {{ 'checked' if fm.public_website_visible=='true' }}> Show on public site</label>
+      <label>Blurb — what the work was about (markdown ok; shown on the public page)<textarea name="blurb" rows="8" placeholder="A short paragraph about this work…">{{ blurb }}</textarea></label>
+      <button type="submit">Save</button>
+    </form>
+  </section>
+
+  <section class="studio-card">
+    <h2>Text for training</h2>
+    <p class="hint">Saved to the dataset for AI training only — <strong>not shown on the public site</strong>. Use for transcripts, press, notes, source material.</p>
+    <form class="studio-form" method="post" action="{{ url_for('studio_add_text', pid=pid) }}">
+      <label>Title<input name="title" placeholder="Press release, interview, statement…"></label>
+      <label>Text<textarea name="text" rows="6"></textarea></label>
+      <button type="submit">Save text to dataset</button>
+    </form>
+
+    <h2>Batch upload</h2>
+    <p class="hint">Drop a batch of files (or click to choose many). Images go to the gallery; PDFs are stored as documents.</p>
+    <form class="studio-form" method="post" action="{{ url_for('studio_upload_batch', pid=pid) }}" enctype="multipart/form-data" id="batchForm">
+      <label class="dropzone-file" id="batchDrop">
+        <input type="file" name="files" id="batchInput" multiple accept="image/*,application/pdf" hidden>
+        <span class="dz-text">Drop images &amp; PDFs here, or click to choose</span>
+        <span class="dz-list" id="batchList"></span>
+      </label>
+      <label class="check"><input type="checkbox" name="pdf_as_download" checked> Add PDFs as downloads on the work page</label>
+      <button type="submit">Upload all</button>
+    </form>
+
+    <details class="more-upload">
+      <summary>More options (captions, PDF labels)</summary>
+      <h3 class="mini-h">Images with a caption</h3>
+      <form class="studio-form" method="post" action="{{ url_for('studio_upload_images', pid=pid) }}" enctype="multipart/form-data">
+        <label>Caption (applied to all)<input name="caption"></label>
+        <label>Images<input type="file" name="images" accept="image/*" multiple></label>
+        <button type="submit">Upload images</button>
+      </form>
+      <h3 class="mini-h">PDFs with a label</h3>
+      <form class="studio-form" method="post" action="{{ url_for('studio_upload_pdfs', pid=pid) }}" enctype="multipart/form-data">
+        <label>Label<input name="label" placeholder="Download Publication"></label>
+        <label>PDFs<input type="file" name="pdfs" accept="application/pdf" multiple></label>
+        <label class="check"><input type="checkbox" name="as_download" checked> Show as download on the work’s page</label>
+        <button type="submit">Upload PDFs</button>
+      </form>
+    </details>
+  </section>
+</div>
+
+<section class="studio-card">
+  <h2>Images · {{ images|length }}</h2>
+  <p class="hint">The <strong>poster</strong> image is used as this work’s tile on the site. Click “Set as poster” on any image.</p>
+  {% if images %}
+  <div class="asset-grid">
+    {% for im in images %}
+    {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+    {% if src %}
+    <figure class="{{ 'is-poster' if im.poster }}">
+      <img src="{{ src }}" loading="lazy" alt="">
+      {% if im.poster %}<span class="poster-badge">Poster</span>{% endif %}
+      <figcaption>{{ im.caption or (im.local_path.split('/')[-1] if im.local_path else '') }}</figcaption>
+      <form method="post" action="{{ url_for('studio_set_poster', pid=pid) }}">
+        <input type="hidden" name="asset_id" value="{{ im.asset_id }}">
+        <button class="poster-btn" type="submit" {{ 'disabled' if im.poster }}>{{ 'Poster ✓' if im.poster else 'Set as poster' }}</button>
+      </form>
+    </figure>
+    {% endif %}
+    {% endfor %}
+  </div>
+  {% else %}<p class="muted">No images yet.</p>{% endif %}
+</section>
+
+<section class="studio-card">
+  <h2>PDFs · {{ pdfs|length }}</h2>
+  {% if pdfs %}
+  <ul class="text-list">
+    {% for p in pdfs %}<li><a href="{{ url_for('local_asset', relpath=p.local_path) }}" target="_blank" rel="noopener">{{ p.title }}</a> <span class="meta">{{ p.confidentiality }}</span></li>{% endfor %}
+  </ul>
+  {% else %}<p class="muted">No PDFs yet.</p>{% endif %}
+</section>
+
+<script>
+(function () {
+  var drop = document.getElementById('batchDrop');
+  var input = document.getElementById('batchInput');
+  var list = document.getElementById('batchList');
+  if (!drop || !input) return;
+  function render() {
+    var n = input.files.length;
+    list.textContent = n ? n + ' file(s): ' + Array.prototype.map.call(input.files, function (f) { return f.name; }).join(', ') : '';
+  }
+  input.addEventListener('change', render);
+  ['dragover', 'dragenter'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('drag'); });
+  });
+  ['dragleave', 'dragend'].forEach(function (ev) {
+    drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('drag'); });
+  });
+  drop.addEventListener('drop', function (e) {
+    e.preventDefault(); drop.classList.remove('drag');
+    if (e.dataTransfer && e.dataTransfer.files.length) { input.files = e.dataTransfer.files; render(); }
+  });
+})();
+</script>
+{% endblock %}

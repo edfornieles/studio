@@ -1,0 +1,5 @@
+<div class="work-chip" draggable="true" data-pid="{{ p.project_id }}">
+  {% set src = p.thumb.source_url or (url_for('local_asset', relpath=p.thumb.local_path) if p.thumb and p.thumb.local_path else '') if p.thumb else '' %}
+  {% if src %}<img src="{{ src }}" loading="lazy" alt="">{% else %}<span class="chip-noimg"></span>{% endif %}
+  <span class="chip-text"><span class="chip-title">{{ p.title }}</span><span class="chip-date">{{ p.date }}</span></span>
+</div>

@@ -1,0 +1,6 @@
+# Studio Clippy console — extra dependency for the web UI
+flask>=3.0
+# Optional (used elsewhere in the repo, not required by the app itself):
+# pypdf>=4.0
+# Pillow>=10.0
+# requests>=2.31

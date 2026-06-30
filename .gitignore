@@ -1,0 +1,52 @@
+# private / sensitive raw material
+# NOTE: no raw folders exist inside the repo by design (all raw material lives
+# in ../studio-clippy-assets/, outside the repo). These lines are defence in
+# depth in case such a folder is ever recreated by mistake.
+therapy_raw_vault/
+private_diaries/
+private_emails/
+raw_private/
+personal_photos/
+love_sex_intimacy/
+archive/personal_documentation/
+*.m4a
+*.mp3
+*.wav
+*.mp4
+*.mov
+
+# large assets
+studio-clippy-assets/
+assets/
+downloads/
+thumbnails/
+videos/
+audio/
+
+# environment
+.env
+.venv/
+__pycache__/
+.DS_Store
+._*
+.AppleDouble
+
+# generated download logs
+asset_manifest.jsonl
+asset_manifest.csv
+
+# generated private exports
+exports/fine_tune_ready/private*
+exports/rag_ready/private*
+exports/public_website/private*
+
+# confidential — kept LOCAL, never pushed to any remote (per push decision)
+project_cards/active/the-foundation.md
+project_cards/active/borrowed-lives-anon.md
+source_texts/private/
+exports/fine_tune_ready/
+exports/rag_ready/
+# sensitive_distilled (diary-derived) + studio_private + NSFW taxonomy
+self_knowledge_cards/
+dialogue_examples/
+archive/borrowed_lives_anon/

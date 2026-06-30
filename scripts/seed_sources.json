@@ -1,0 +1,47 @@
+{
+  "_comment": "Seed sources for download_assets.py. Each entry is a public page or file to index/download. 'source' is used by --source filtering. Respect site structure; crawl gently. confidentiality is 'public' for all seeds here.",
+  "sources": [
+    {
+      "source": "carlosishikawa",
+      "type": "page",
+      "url": "https://www.carlosishikawa.com/artists/edfornieles/",
+      "project": "",
+      "projects_referenced": ["inside-out-2", "associations", "cel", "seed", "the-hangover-part-ii"],
+      "note": "Carlos/Ishikawa artist page. Index Ed Fornieles pages, images, PDFs and publication links. Also index selected press/texts listed here.",
+      "confidentiality": "public"
+    },
+    {
+      "source": "carlosishikawa",
+      "type": "pdf",
+      "url": "https://www.carlosishikawa.com/site/assets/files/2182/0-booklet-ef-2019.pdf",
+      "project": "",
+      "title": "Ed Fornieles booklet (2019)",
+      "note": "Download and extract text via extract_pdf_text.py.",
+      "confidentiality": "public"
+    },
+    {
+      "source": "kostyal",
+      "type": "page",
+      "url": "https://kostyal.com/exhibitions/jupiter-ascending/",
+      "project": "jupiter-ascending-sauna",
+      "note": "Jupiter Ascending / Sauna project. Index connected images and text.",
+      "conceptual_tags": ["sauna", "spa", "immersion", "news cycles", "distorted news", "meditative noise", "hallucination", "media overload", "data stream", "body as interface", "care", "ritual refuge"],
+      "confidentiality": "public"
+    }
+  ],
+  "search_queries": [
+    "Ed Fornieles Dorm Daze",
+    "Ed Fornieles Animal House",
+    "Ed Fornieles Modern Family Chisenhale",
+    "Ed Fornieles Chisenhale Gallery",
+    "Ed Fornieles The Hangover Part II",
+    "Ed Fornieles Dreamy Awards",
+    "Ed Fornieles Trial Trial",
+    "Ed Fornieles Finiliar",
+    "Ed Fornieles Cute Somerset House",
+    "Ed Fornieles New Museum",
+    "Ed Fornieles Serpentine",
+    "Ed Fornieles Palais de Tokyo",
+    "Ed Fornieles Nabi Center"
+  ]
+}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Images · Studio Clippy{% endblock %}
+{% block content %}
+<form class="toolbar" method="get">
+  <select name="project" onchange="this.form.submit()">
+    <option value="">all projects</option>
+    {% for p in projects %}<option value="{{ p }}" {{ 'selected' if p==pid }}>{{ p }}</option>{% endfor %}
+  </select>
+  <select name="confidentiality" onchange="this.form.submit()">
+    <option value="">all confidentiality</option>
+    {% for c in CONF_LEVELS %}<option value="{{ c }}" {{ 'selected' if c==conf }}>{{ c }}</option>{% endfor %}
+  </select>
+  <span class="note">{{ images|length }} image(s)</span>
+</form>
+
+<div class="thumbs">
+  {% for im in images %}
+  <div class="thumb">
+    {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+    {% if src %}<a href="{{ im.source_page or src }}" target="_blank" rel="noopener"><img src="{{ src }}" loading="lazy" alt=""></a>{% endif %}
+    <div class="cap">
+      <a href="{{ url_for('project', pid=im.project) }}">{{ im.project }}</a><br>
+      {{ im.caption or im.asset_id }}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% if not images %}<p class="note">No images yet. Catalogue some from a project page or the Feed/Upload tab.</p>{% endif %}
+{% endblock %}

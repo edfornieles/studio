@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Feed / Upload · Studio Clippy{% endblock %}
+{% block content %}
+<h1>Feed &amp; Upload</h1>
+
+<div class="layout">
+  <div>
+    <div class="panel">
+      <h3>Add a note / link / text</h3>
+      <p class="note">Public &amp; studio-private notes are saved into <span class="kv">source_texts/</span>. Sensitive notes go to the git-ignored vault.</p>
+      <form method="post" action="{{ url_for('intake_note') }}">
+        <label>Title</label>
+        <input name="title" style="width:100%" placeholder="e.g. Interview snippet, press link, idea">
+        <div class="row">
+          <div>
+            <label>Attach to project (optional)</label>
+            <select name="project" style="width:100%">
+              <option value="">— unfiled —</option>
+              {% for p in projects %}<option value="{{ p.project_id }}">{{ p.title }}</option>{% endfor %}
+            </select>
+          </div>
+          <div>
+            <label>Confidentiality</label>
+            <select name="confidentiality" style="width:100%">
+              {% for c in CONF_LEVELS %}<option value="{{ c }}" {{ 'selected' if c=='studio_private' }}>{{ c }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <label>Text / link(s)</label>
+        <textarea name="text" placeholder="Paste notes, context, or URLs…"></textarea>
+        <div style="margin-top:10px"><button type="submit">Save note</button></div>
+      </form>
+    </div>
+
+    <div class="panel" id="personal">
+      <h3>Upload personal information</h3>
+      <div class="warnbox">
+        <b>Handled with care.</b> Personal files default to
+        <span class="badge raw_private_vault">raw_private_vault</span> — stored in
+        <span class="kv">studio-clippy-assets/</span>, which is <b>git-ignored and never
+        surfaced</b> by the assistant. Raw material is meant to be <i>distilled</i> into
+        safe self-knowledge cards (below), not used directly.
+      </div>
+      <form method="post" action="{{ url_for('intake_personal') }}" enctype="multipart/form-data" style="margin-top:12px">
+        <label>File (diary, recording, transcript, document…)</label>
+        <input type="file" name="file" required style="width:100%">
+        <label>Confidentiality</label>
+        <select name="confidentiality" style="width:100%">
+          <option value="raw_private_vault" selected>raw_private_vault (default — therapy/diary vault)</option>
+          <option value="sensitive_distilled">sensitive_distilled (visual references)</option>
+          <option value="studio_private">studio_private</option>
+        </select>
+        <div style="margin-top:10px"><button type="submit">Store privately</button></div>
+      </form>
+    </div>
+
+    <div class="panel" id="distill">
+      <h3>Distil into a self-knowledge card</h3>
+      <p class="note">Turn raw personal material into a <b>safe, usable</b> pattern card
+        (<span class="badge sensitive_distilled">sensitive_distilled</span>, never quoting the raw source).</p>
+      <form method="post" action="{{ url_for('intake_distill') }}">
+        <label>Pattern name *</label>
+        <input name="pattern" required style="width:100%" placeholder="e.g. Hides in complexity when uncertain">
+        <div class="row">
+          <div>
+            <label>Source type</label>
+            <select name="source_type" style="width:100%">
+              <option>diary</option><option>therapy</option><option>interview</option>
+              <option>memory</option><option>conversation</option><option selected>mixed</option>
+            </select>
+          </div>
+        </div>
+        <label>Description</label><textarea name="description" style="min-height:60px"></textarea>
+        <div class="row">
+          <div><label>Where it appears</label><textarea name="where" style="min-height:50px"></textarea></div>
+          <div><label>Emotional tone</label><textarea name="tone" style="min-height:50px"></textarea></div>
+        </div>
+        <div class="row">
+          <div><label>How it helps the work</label><textarea name="helps" style="min-height:50px"></textarea></div>
+          <div><label>How it blocks the work</label><textarea name="blocks" style="min-height:50px"></textarea></div>
+        </div>
+        <div class="row">
+          <div><label>Useful Clippy response</label><textarea name="useful" style="min-height:50px"></textarea></div>
+          <div><label>Forbidden Clippy response</label><textarea name="forbidden" style="min-height:50px"></textarea></div>
+        </div>
+        <div style="margin-top:10px"><button type="submit">Create self-knowledge card</button></div>
+      </form>
+    </div>
+  </div>
+
+  <aside>
+    <div class="panel">
+      <h3>Private vault index</h3>
+      <p class="note">{{ private|length }} item(s) stored privately (outside the repo). Filenames only — content is never shown here.</p>
+      {% for r in private|reverse %}
+        <div style="border-top:1px solid var(--line);padding:8px 0;font-size:12px">
+          <span class="badge {{ r.confidentiality }}">{{ r.confidentiality }}</span>
+          <div class="kv">{{ r.path }}</div>
+          <div class="note">{{ r.kind }} · {{ r.added }}</div>
+        </div>
+      {% else %}
+        <p class="note">Nothing yet.</p>
+      {% endfor %}
+    </div>
+  </aside>
+</div>
+{% endblock %}

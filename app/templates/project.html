@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ fm.title or pid }} · Studio Clippy{% endblock %}
+{% block content %}
+<p class="note"><a href="{{ url_for('index') }}">← all projects</a> · <span class="kv">{{ rel }}</span></p>
+<h1>{{ fm.title or pid }}
+  <span class="badge {{ fm.confidentiality or 'public' }}">{{ fm.confidentiality or 'public' }}</span>
+  {% if fm.needs_review == 'true' %}<span class="badge review">needs review</span>{% endif %}
+</h1>
+
+<div class="layout">
+  <div>
+    <div class="panel prose">{{ body | md | safe }}</div>
+  </div>
+
+  <aside>
+    <div class="panel">
+      <h3>Edit card</h3>
+      <form method="post" action="{{ url_for('project_edit', pid=pid) }}">
+        <label>Title</label>
+        <input name="title" value="{{ fm.title or '' }}" style="width:100%">
+        <label>Date</label>
+        <input name="date" value="{{ fm.date or '' }}" style="width:100%">
+        <label>Status</label>
+        <select name="status" style="width:100%">
+          {% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if s==fm.status }}>{{ s }}</option>{% endfor %}
+        </select>
+        <label>Confidentiality</label>
+        <select name="confidentiality" style="width:100%">
+          {% for c in CONF_LEVELS %}<option value="{{ c }}" {{ 'selected' if c==fm.confidentiality }}>{{ c }}</option>{% endfor %}
+        </select>
+        <label><input type="checkbox" name="needs_review" {{ 'checked' if fm.needs_review=='true' }}> needs review</label>
+        <label title="Show this work on the public exhibition site (public confidentiality only)">
+          <input type="checkbox" name="public_website_visible" {{ 'checked' if fm.public_website_visible=='true' }}> visible on public site</label>
+        {% if fm.public_website_visible=='true' and (fm.confidentiality or 'public')=='public' %}
+        <p class="note" style="margin:4px 0 0">↗ <a href="{{ url_for('site_exhibition', pid=pid) }}" target="_blank" rel="noopener">view on public site</a></p>
+        {% elif fm.public_website_visible=='true' %}
+        <p class="note warn" style="margin:4px 0 0">Flagged visible, but confidentiality is “{{ fm.confidentiality }}” — it stays hidden until set to public.</p>
+        {% endif %}
+        <label>Body (markdown)</label>
+        <textarea name="body" style="min-height:260px">{{ body }}</textarea>
+        <div style="margin-top:10px"><button type="submit">Save card</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Feed in info / a link</h3>
+      <form method="post" action="{{ url_for('project_feed', pid=pid) }}">
+        <label>Add to section</label>
+        <select name="section" style="width:100%">
+          <option>Feed log</option><option>Sources</option><option>Possible mutations</option>
+          <option>Research notes (needs review)</option><option>Residue / documentation / afterlife</option>
+        </select>
+        <label>Note / text</label>
+        <textarea name="text" style="min-height:70px" placeholder="A thought, fact, or context…"></textarea>
+        <label>Link (optional)</label>
+        <input name="link" placeholder="https://…" style="width:100%">
+        <div style="margin-top:10px"><button type="submit">Append</button></div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <h3>Add image</h3>
+      <form method="post" action="{{ url_for('project_image', pid=pid) }}" enctype="multipart/form-data">
+        <label>By URL</label>
+        <input name="url" placeholder="https://…/image.jpg" style="width:100%">
+        <label>…or upload a file</label>
+        <input type="file" name="file" accept="image/*" style="width:100%">
+        <label>Caption</label>
+        <input name="caption" style="width:100%">
+        <label>Confidentiality</label>
+        <select name="confidentiality" style="width:100%">
+          {% for c in CONF_LEVELS %}<option value="{{ c }}" {{ 'selected' if c==(fm.confidentiality or 'public') }}>{{ c }}</option>{% endfor %}
+        </select>
+        <div style="margin-top:10px"><button type="submit">Catalogue image</button></div>
+      </form>
+    </div>
+  </aside>
+</div>
+
+{% if images %}
+<h2 style="margin-top:30px">Images · {{ images|length }}</h2>
+<div class="thumbs">
+  {% for im in images %}
+  <div class="thumb">
+    {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+    {% if src %}<a href="{{ im.source_page or src }}" target="_blank" rel="noopener"><img src="{{ src }}" loading="lazy" alt=""></a>{% endif %}
+    <div class="cap">{{ im.caption or im.asset_id }}{% if im.photographer %}<br>{{ im.photographer }}{% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

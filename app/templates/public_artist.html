@@ -1,0 +1,112 @@
+{% extends "public_base.html" %}
+{% block title %}{{ ARTIST_NAME }}{% endblock %}
+{% block content %}
+<div class="container">
+
+  <h1 class="artist-name">{{ ARTIST_NAME }}</h1>
+
+  {% if selected %}
+  <section class="block selected-work">
+    <h2 class="section-head">Selected Work</h2>
+    <div class="slideshow">
+      <button class="slide-arrow prev" aria-label="Previous">&larr;</button>
+      <div class="slide-stage" id="slideStage">
+        {% for im in selected %}
+        {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+        {% if src %}
+        <figure class="slide{% if loop.first %} active{% endif %}" data-cap="{{ im.caption or im._title }}">
+          <a href="{{ url_for('site_exhibition', pid=im._project_id) }}"><img src="{{ src }}" loading="lazy" alt="{{ im._title }}"></a>
+        </figure>
+        {% endif %}
+        {% endfor %}
+      </div>
+      <button class="slide-arrow next" aria-label="Next">&rarr;</button>
+      <div class="slide-foot">
+        <span class="slide-cap" id="slideCap">{{ (selected[0].caption or selected[0]._title) }}</span>
+        <span class="slide-count"><span id="slideCur">1</span> / {{ selected|length }}</span>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+  {% if work_groups %}
+  <section class="block">
+    <h2 class="section-head">The Work</h2>
+    {% for group in work_groups %}
+      {% if group.is_project %}
+      <div class="work-project">
+        <h3 class="project-head">{{ group.type }}</h3>
+        {% if group.description %}<p class="project-desc">{{ group.description }}</p>{% endif %}
+        <div class="article-grid">
+          {% for p in group.projects %}{% include "_article_card.html" %}{% endfor %}
+        </div>
+      </div>
+      {% else %}
+      <h3 class="work-subhead">{{ group.type }}</h3>
+      <div class="article-grid">
+        {% for p in group.projects %}{% include "_article_card.html" %}{% endfor %}
+      </div>
+      {% endif %}
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {% if press %}
+  <section class="block narrow">
+    <h2 class="section-head">Selected Press &amp; Texts</h2>
+    <ul class="text-list">
+      {% for r in press %}
+      <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.title }}</a>
+          <span class="meta">{{ r.label }}{% if r.year %}, {{ r.year }}{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if publications %}
+  <section class="block narrow">
+    <h2 class="section-head">Selected Publications</h2>
+    <ul class="text-list">
+      {% for r in publications %}
+      <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.title }} — Booklet</a>
+          <span class="meta">{{ GALLERY.name }}{% if r.year %}, {{ r.year }}{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if cv %}
+  <section class="block narrow">
+    <h2 class="section-head">CV</h2>
+    <h3 class="cv-sub">Selected Exhibitions</h3>
+    <ul class="cv-list">
+      {% for r in cv %}
+      <li><span class="cv-year">{{ r.year or '—' }}</span>
+          <span class="cv-body"><a href="{{ url_for('site_exhibition', pid=r.pid) }}">{{ r.title }}</a>{% if r.venue %}<span class="cv-venue">, {{ r.venue }}</span>{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+</div>
+
+<script>
+(function () {
+  var stage = document.getElementById('slideStage');
+  if (!stage) return;
+  var slides = Array.prototype.slice.call(stage.querySelectorAll('.slide'));
+  if (!slides.length) return;
+  var capEl = document.getElementById('slideCap'), curEl = document.getElementById('slideCur');
+  var i = 0;
+  function show(n) {
+    slides[i].classList.remove('active');
+    i = (n + slides.length) % slides.length;
+    slides[i].classList.add('active');
+    capEl.textContent = slides[i].getAttribute('data-cap');
+    curEl.textContent = i + 1;
+  }
+  document.querySelector('.slide-arrow.prev').addEventListener('click', function () { show(i - 1); });
+  document.querySelector('.slide-arrow.next').addEventListener('click', function () { show(i + 1); });
+})();
+</script>
+{% endblock %}

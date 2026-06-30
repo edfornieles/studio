@@ -1,0 +1,10 @@
+{% extends "public_base.html" %}
+{% block title %}Exhibitions — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-head">Exhibitions</h1>
+  <div class="article-grid">
+    {% for p in projects %}{% include "_article_card.html" %}{% endfor %}
+  </div>
+</div>
+{% endblock %}

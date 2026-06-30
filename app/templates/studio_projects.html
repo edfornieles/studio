@@ -1,0 +1,130 @@
+{% extends "studio_base.html" %}
+{% block title %}Projects · Studio{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('studio_index') }}">← Dashboard</a></p>
+<h1 class="page-head">Projects</h1>
+<p class="hint">Create a project, then drag works into it. Drag the ⠿ grip to reorder projects;
+drag chips to move/reorder works. New projects appear at the top.
+Each project becomes a sub-heading under “The Work”, with its works in this order.</p>
+
+<form class="studio-form" method="post" action="{{ url_for('studio_projects_new') }}" style="flex-direction:row; align-items:flex-end; gap:1rem; max-width:none; flex-wrap:wrap">
+  <label style="flex:0 0 20rem">New project<input name="title" placeholder="e.g. Finiliar, The Foundation…" required></label>
+  <label style="flex:1 1 24rem">Description (optional)<input name="description" placeholder="Shown under the project heading on the site"></label>
+  <button type="submit">Create project</button>
+</form>
+
+<form method="post" action="{{ url_for('studio_projects_save') }}" id="saveForm">
+  <input type="hidden" name="layout" id="layoutField">
+  <p style="margin:1.6rem 0 .8rem"><button type="submit">Save arrangement</button></p>
+
+  <h2 class="studio-h">Unassigned works</h2>
+  <div class="dropzone pool" data-cid="">
+    {% for p in unassigned %}{% include "_work_chip.html" %}{% endfor %}
+  </div>
+
+  <h2 class="studio-h">Projects</h2>
+  <div class="proj-grid" id="projGrid">
+    {% for c in collections %}
+    <div class="board-col is-project" data-cid="{{ c.id }}">
+      <div class="col-head">
+        <span class="col-grip" draggable="true" title="Drag to reorder projects">⠿</span>
+        <input class="col-title" value="{{ c.title }}" aria-label="Project title">
+        <button type="button" class="del-col" data-cid="{{ c.id }}" title="Delete project">×</button>
+      </div>
+      <input class="col-desc" value="{{ c.description }}" placeholder="Description (optional)" aria-label="Project description">
+      <div class="dropzone" data-cid="{{ c.id }}">
+        {% for p in c.members %}{% include "_work_chip.html" %}{% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</form>
+
+<form method="post" action="{{ url_for('studio_projects_delete') }}" id="delForm" style="display:none">
+  <input type="hidden" name="cid" id="delCid">
+</form>
+
+<script>
+(function () {
+  let dragEl = null, dragType = null;
+
+  document.addEventListener('dragstart', e => {
+    const grip = e.target.closest('.col-grip');
+    const chip = e.target.closest('.work-chip');
+    if (grip) { dragType = 'project'; dragEl = grip.closest('.board-col'); }
+    else if (chip) { dragType = 'chip'; dragEl = chip; }
+    else return;
+    dragEl.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  document.addEventListener('dragend', () => {
+    if (dragEl) dragEl.classList.remove('dragging');
+    dragEl = null; dragType = null;
+  });
+  document.addEventListener('drop', e => e.preventDefault());
+
+  function afterV(zone, y) {
+    const els = [...zone.querySelectorAll('.work-chip:not(.dragging)')];
+    return els.reduce((c, child) => {
+      const b = child.getBoundingClientRect(), off = y - b.top - b.height / 2;
+      return (off < 0 && off > c.off) ? { off, el: child } : c;
+    }, { off: -Infinity }).el;
+  }
+  function beforeInGrid(grid, x, y) {
+    const els = [...grid.querySelectorAll('.board-col:not(.dragging)')];
+    let best = null, bestD = Infinity, before = true;
+    for (const el of els) {
+      const b = el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+      const d = Math.hypot(x - cx, y - cy);
+      if (d < bestD) { bestD = d; best = el; before = (y < cy - 4) || (Math.abs(y - cy) <= b.height / 2 && x < cx); }
+    }
+    if (!best) return null;
+    return before ? best : best.nextElementSibling;
+  }
+
+  // chips: into pool (order irrelevant) or project dropzones (vertical reorder)
+  document.querySelectorAll('.dropzone').forEach(zone => {
+    zone.addEventListener('dragover', e => {
+      if (dragType !== 'chip') return;
+      e.preventDefault();
+      if (zone.classList.contains('pool')) { if (dragEl.parentElement !== zone) zone.appendChild(dragEl); return; }
+      const after = afterV(zone, e.clientY);
+      if (after) zone.insertBefore(dragEl, after); else zone.appendChild(dragEl);
+    });
+  });
+
+  // projects: reorder within the 4-wide grid
+  const grid = document.getElementById('projGrid');
+  grid.addEventListener('dragover', e => {
+    if (dragType !== 'project') return;
+    e.preventDefault();
+    const ref = beforeInGrid(grid, e.clientX, e.clientY);
+    if (ref !== dragEl) grid.insertBefore(dragEl, ref);
+  });
+
+  // build payload on save: project order + members/title/description
+  document.getElementById('saveForm').addEventListener('submit', () => {
+    const cols = [...grid.querySelectorAll('.board-col.is-project')];
+    const order = cols.map(c => c.dataset.cid);
+    const data = {};
+    cols.forEach(col => {
+      const cid = col.dataset.cid, zone = col.querySelector('.dropzone');
+      data[cid] = {
+        members: [...zone.querySelectorAll('.work-chip')].map(c => c.dataset.pid),
+        title: (col.querySelector('.col-title') || {}).value || '',
+        description: (col.querySelector('.col-desc') || {}).value || ''
+      };
+    });
+    document.getElementById('layoutField').value = JSON.stringify({ order, data });
+  });
+
+  document.querySelectorAll('.del-col').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (!confirm('Delete this project? Its works become unassigned.')) return;
+      document.getElementById('delCid').value = btn.dataset.cid;
+      document.getElementById('delForm').submit();
+    });
+  });
+})();
+</script>
+{% endblock %}

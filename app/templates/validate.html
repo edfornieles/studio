@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Validate · Studio Clippy{% endblock %}
+{% block content %}
+<h1>Dataset validation {% if ok %}<span class="badge public">OK</span>{% else %}<span class="badge raw_private_vault">issues</span>{% endif %}</h1>
+<p class="note">Runs <span class="kv">scripts/validate_dataset.py</span> — checks IDs, confidentiality, and that nothing private is mislabelled public.</p>
+<pre>{{ output }}</pre>
+<p><a class="btn ghost" href="{{ url_for('validate') }}">Re-run</a></p>
+{% endblock %}

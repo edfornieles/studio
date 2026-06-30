@@ -1,0 +1,17 @@
+{% extends "public_base.html" %}
+{% block title %}News — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-head">News</h1>
+  <ul class="news-list">
+    {% for p in projects %}
+    <li>
+      <a href="{{ url_for('site_exhibition', pid=p.project_id) }}">
+        <span class="news-title">{{ ARTIST_NAME }}: {{ p.title }}</span>
+        <span class="news-meta">{{ p.date }}{% if p.venue %} · {{ p.venue }}{% endif %}</span>
+      </a>
+    </li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

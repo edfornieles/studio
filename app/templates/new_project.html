@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}New project · Studio Clippy{% endblock %}
+{% block content %}
+<h1>New project card</h1>
+<p class="note">Creates a card from the schema with all conceptual sections stubbed as <span class="kv">TKTK</span>, ready to fill or interview into later.</p>
+<div class="panel" style="max-width:640px">
+  <form method="post">
+    <label>Title *</label>
+    <input name="title" required style="width:100%" placeholder="e.g. The Care Facility">
+    <div class="row">
+      <div>
+        <label>Status</label>
+        <select name="status" style="width:100%">
+          {% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if s=='imagined' }}>{{ s }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Confidentiality</label>
+        <select name="confidentiality" style="width:100%">
+          {% for c in CONF_LEVELS %}<option value="{{ c }}" {{ 'selected' if c=='studio_private' }}>{{ c }}</option>{% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Date</label>
+        <input name="date" style="width:100%" placeholder="YYYY or blank = today">
+      </div>
+    </div>
+    <label>Short description (optional)</label>
+    <textarea name="description" placeholder="One or two sentences…"></textarea>
+    <div style="margin-top:12px"><button type="submit">Create card</button></div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Studio Clippy Console{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="{{ url_for('index') }}">📎 Studio&nbsp;Clippy <span>console</span></a>
+  <nav>
+    <a href="{{ url_for('index') }}">Projects</a>
+    <a href="{{ url_for('assets') }}">Images</a>
+    <a href="{{ url_for('intake') }}">Feed&nbsp;/&nbsp;Upload</a>
+    <a href="{{ url_for('new_project') }}">+ New</a>
+    <a href="{{ url_for('validate') }}">Validate</a>
+    <a href="{{ url_for('site_artist') }}" target="_blank" rel="noopener">Public&nbsp;site&nbsp;↗</a>
+  </nav>
+  <div class="stat">
+    <b>{{ stats.projects }}</b> projects ·
+    <b>{{ stats.images }}</b> images ·
+    <b>{{ stats.needs_review }}</b> to review ·
+    <b>{{ stats.private_items }}</b> private
+  </div>
+</header>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flashes">
+      {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<main>{% block content %}{% endblock %}</main>
+
+<footer>
+  Local archive tool · personal uploads default to the git-ignored vault ·
+  not for network exposure.
+</footer>
+</body>
+</html>

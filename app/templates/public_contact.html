@@ -1,0 +1,15 @@
+{% extends "public_base.html" %}
+{% block title %}Contact — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-head">Contact</h1>
+  <div class="block narrow contact">
+    <p class="foot-name">{{ GALLERY.name }}</p>
+    <p>{% for l in GALLERY.address %}{{ l }}<br>{% endfor %}
+       <a href="{{ GALLERY.map }}" target="_blank" rel="noopener">View map</a></p>
+    <p>{{ GALLERY.hours }}</p>
+    <p>{{ GALLERY.phone }}<br>
+       <a href="mailto:{{ GALLERY.email }}">{{ GALLERY.email }}</a></p>
+  </div>
+</div>
+{% endblock %}

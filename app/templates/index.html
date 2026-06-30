@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block content %}
+<form class="toolbar" method="get">
+  <input type="search" name="q" value="{{ q }}" placeholder="Search projects…" style="flex:1">
+  <select name="status" onchange="this.form.submit()">
+    <option value="">all statuses</option>
+    {% for s in STATUSES %}<option value="{{ s }}" {{ 'selected' if s==status }}>{{ s }}</option>{% endfor %}
+  </select>
+  <button type="submit">Search</button>
+  <a class="btn ghost" href="{{ url_for('new_project') }}">+ New project</a>
+</form>
+
+{% if not grouped %}<p class="note">No projects match.</p>{% endif %}
+
+{% for status in STATUSES %}
+  {% if grouped.get(status) %}
+    <div class="statusgroup">{{ status }} · {{ grouped[status]|length }}</div>
+    <div class="grid">
+      {% for p in grouped[status] %}
+      <div class="card">
+        <h3><a href="{{ url_for('project', pid=p.project_id) }}">{{ p.title }}</a></h3>
+        <div class="meta">
+          <span class="kv">{{ p.date or '—' }}</span>
+          <span class="badge {{ p.confidentiality }}">{{ p.confidentiality }}</span>
+          {% if p.image_count %}<span class="badge count">{{ p.image_count }} img</span>{% endif %}
+          {% if p.needs_review %}<span class="badge review">needs review</span>{% endif %}
+          {% if p.confidence %}<span class="kv">conf: {{ p.confidence }}</span>{% endif %}
+        </div>
+        {% if p.excerpt %}<p class="excerpt">{{ p.excerpt }}</p>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}
+
+{# any non-standard statuses #}
+{% for status, items in grouped.items() %}
+  {% if status not in STATUSES %}
+    <div class="statusgroup">{{ status }} · {{ items|length }}</div>
+    <div class="grid">
+      {% for p in items %}
+      <div class="card"><h3><a href="{{ url_for('project', pid=p.project_id) }}">{{ p.title }}</a></h3></div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,12 @@
+{
+  "included": {
+    "projects": 0,
+    "images": 0,
+    "references": 0
+  },
+  "excluded": {
+    "projects": 30,
+    "images": 290,
+    "references": 0
+  }
+}

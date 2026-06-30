@@ -1,0 +1,33 @@
+{% extends "public_base.html" %}
+{% block title %}Library — {{ SITE_NAME }}{% endblock %}
+{% block content %}
+<div class="container">
+  <h1 class="page-head">Library</h1>
+
+  {% if publications %}
+  <section class="block narrow">
+    <h2 class="section-head">Publications</h2>
+    <ul class="text-list">
+      {% for r in publications %}
+      <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.title }} — Booklet</a>
+          <span class="meta">{{ GALLERY.name }}{% if r.year %}, {{ r.year }}{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if press %}
+  <section class="block narrow">
+    <h2 class="section-head">Press &amp; Texts</h2>
+    <ul class="text-list">
+      {% for r in press %}
+      <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.title }}</a>
+          <span class="meta">{{ r.label }}{% if r.year %}, {{ r.year }}{% endif %}</span></li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% if not press and not publications %}<p class="muted">Nothing here yet.</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,146 @@
+/* Public exhibition site — minimal commercial-gallery layout, single artist.
+   Neo-grotesque type, uppercase headings, single purple accent on a white
+   ground. Uses system Helvetica/Arial (close to the gallery's grotesque); no
+   licensed font binaries are redistributed — swap --sans to taste. */
+:root {
+  --paper: #ffffff;
+  --ink: #000000;
+  --muted: #6f6f6f;
+  --line: #e6e6e6;
+  --accent: #964cff;
+  /* Archivo: open-source grotesque, closest free match to the gallery's
+     Diatype. Swap the first family for "Inter" or "Space Grotesk" to taste. */
+  --sans: "Archivo", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --maxw: 1500px;
+  --pad: 2.5rem;
+}
+
+* { box-sizing: border-box; }
+html { font-size: 16px; }
+body.site {
+  margin: 0; background: var(--paper); color: var(--ink);
+  font-family: var(--sans); font-size: 0.95rem; line-height: 1.25;
+  border-top: 3px solid var(--accent);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+a:hover { color: var(--accent); }
+.container { max-width: var(--maxw); margin: 0 auto; padding: 0 var(--pad); }
+.muted { color: var(--muted); }
+
+/* ---------- nav (logo + items clustered left, bold uppercase) ---------- */
+.site-nav { background: var(--paper); position: sticky; top: 0; z-index: 20; }
+.site-nav .container { display: flex; align-items: baseline; gap: 2.4rem; padding-top: 1.5rem; padding-bottom: 1.5rem; }
+.home-logo { font-size: 2rem; font-weight: 700; letter-spacing: -0.01em; text-transform: uppercase; white-space: nowrap; }
+.nav-items { display: flex; gap: 1.5rem; flex-wrap: wrap; }
+.nav-items a { font-size: 1.15rem; font-weight: 700; text-transform: uppercase; }
+
+/* ---------- headings ---------- */
+.site-main { padding-bottom: 7rem; }
+.block { margin: 4.5rem 0; }
+.block.narrow { max-width: 50rem; }
+.artist-name { font-size: 2.6rem; font-weight: 500; line-height: 1; text-transform: uppercase; margin: 2.5rem 0 0; }
+.page-head { font-size: 2.2rem; font-weight: 500; text-transform: uppercase; margin: 2.5rem 0 2.5rem; }
+.section-head { font-size: 1.9rem; font-weight: 500; text-transform: uppercase; color: var(--accent); margin: 0 0 1.8rem; }
+.work-subhead { font-size: 1.05rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  margin: 2.6rem 0 1.2rem; padding-bottom: .5rem; border-bottom: 1px solid var(--line); }
+.work-subhead:first-of-type { margin-top: .4rem; }
+/* a Project: exhibitions nested inside, marked by a purple rule */
+.work-project { margin: 2.8rem 0; padding-left: 1.4rem; border-left: 3px solid var(--accent); }
+.work-project:first-of-type { margin-top: .6rem; }
+.project-head { font-size: 1.4rem; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; margin: 0 0 .3rem; }
+.project-desc { color: var(--muted); max-width: 50rem; margin: 0 0 1.3rem; font-size: .95rem; line-height: 1.55; }
+
+/* ---------- Selected Work: single-image slideshow ---------- */
+.slideshow { position: relative; padding: 0 3.5rem; }
+.slide-stage { width: 100%; }
+.slide { display: none; }
+.slide.active { display: block; }
+/* every slide locked to the same frame as the gallery (≈ C/I 201×122 ratio) */
+.slide img { display: block; width: 100%; aspect-ratio: 200 / 122; object-fit: cover; background: #f4f4f4; }
+.slide-arrow {
+  position: absolute; top: 42%; transform: translateY(-50%);
+  background: none; border: 0; cursor: pointer; font-size: 1.7rem; color: var(--ink);
+  line-height: 1; padding: .5rem;
+}
+.slide-arrow:hover { color: var(--accent); }
+.slide-arrow.prev { left: 0; } .slide-arrow.next { right: 0; }
+.slide-foot { display: flex; justify-content: space-between; align-items: baseline; gap: 1.5rem; margin-top: 1rem; }
+.slide-cap { font-size: .85rem; color: var(--ink); }
+.slide-count { font-size: .85rem; color: var(--ink); white-space: nowrap; }
+
+/* ---------- exhibitions: 2-col, image left / text right ---------- */
+.article-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem 4rem; }
+.article { display: grid; grid-template-columns: 200px 1fr; gap: 1.6rem; align-items: start; }
+.article .image-wrap { width: 200px; height: 122px; overflow: hidden; background: #f4f4f4; }
+.article .image-wrap img.autocrop { width: 100%; height: 100%; object-fit: cover; display: block; }
+.article .text { line-height: 1.45; padding-top: .1rem; }
+.article .text .artist { font-weight: 700; font-size: .98rem; }
+.article .text .title { font-style: italic; font-size: .98rem; }
+.article .text .date { font-size: .98rem; color: var(--ink); margin-top: .15rem; }
+.article:hover .artist, .article:hover .title, .article:hover .date { color: var(--accent); }
+
+/* ---------- exhibition detail ---------- */
+.exhibition-head { margin: 2.5rem 0 2.5rem; max-width: 50rem; }
+.ex-artist { font-size: 1.8rem; font-weight: 600; text-transform: uppercase; margin: 0 0 .2rem; }
+.ex-title { font-size: 1.8rem; font-weight: 400; margin: 0 0 1rem; }
+.ex-dates { font-size: .95rem; margin: 0 0 .6rem; line-height: 1.5; }
+.ex-downloads { font-size: .95rem; font-weight: 700; margin: 0; line-height: 1.8; }
+.ex-downloads a { text-decoration: underline; text-underline-offset: 2px; }
+.ex-downloads a:hover { color: var(--accent); }
+.bleed-gallery { display: flex; flex-direction: column; gap: 4.5rem; margin: 0 auto 4rem; max-width: var(--maxw); padding: 0 var(--pad); }
+.bleed { margin: 0; }
+.bleed img { display: block; width: 100%; height: auto; }
+.bleed figcaption { margin-top: .7rem; font-size: .82rem; color: var(--ink); }
+.bleed figcaption em, .bleed figcaption i { font-style: italic; }
+.ex-prose { font-size: 1rem; line-height: 1.55; }
+.ex-blurb { max-width: 50rem; font-size: 1.05rem; line-height: 1.6; margin: 0 0 2.4rem; }
+.back { margin-top: 3rem; font-size: .9rem; }
+
+/* ---------- text lists (press / publications) ---------- */
+.text-list { list-style: none; margin: 0; padding: 0; }
+.text-list li { padding: .8rem 0; border-bottom: 1px solid var(--line); font-size: .95rem; line-height: 1.4; }
+.text-list a:hover { color: var(--accent); }
+.text-list .meta { color: var(--muted); margin-left: .4rem; }
+
+/* ---------- CV ---------- */
+.cv-sub { font-size: .85rem; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 0 0 1rem; }
+.cv-list { list-style: none; margin: 0; padding: 0; }
+.cv-list li { display: grid; grid-template-columns: 4rem 1fr; gap: 1rem; padding: .6rem 0; border-bottom: 1px solid var(--line); font-size: .95rem; }
+.cv-year { color: var(--muted); font-variant-numeric: tabular-nums; }
+.cv-list .title { font-style: italic; }
+.cv-venue { color: var(--muted); }
+
+/* ---------- news ---------- */
+.news-list { list-style: none; margin: 0; padding: 0; max-width: 50rem; }
+.news-list li { border-bottom: 1px solid var(--line); }
+.news-list a { display: flex; flex-direction: column; gap: .25rem; padding: 1.1rem 0; }
+.news-title { font-size: 1rem; }
+.news-meta { font-size: .88rem; color: var(--muted); }
+
+/* ---------- prose / contact ---------- */
+.prose a { text-decoration: underline; text-underline-offset: 2px; }
+.prose ul { padding-left: 1.2rem; }
+.contact p { line-height: 1.6; }
+.foot-name { font-weight: 700; text-transform: uppercase; }
+
+/* ---------- footer ---------- */
+.site-footer { border-top: 1px solid var(--line); padding: 2.5rem 0 4rem; font-size: .88rem; color: var(--muted); margin-top: 4rem; }
+.site-footer .container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.site-footer a:hover { color: var(--accent); }
+.site-footer p { margin: 0 0 .6rem; line-height: 1.5; }
+
+/* ---------- responsive ---------- */
+@media (max-width: 980px) {
+  html { font-size: 15px; }
+  .article-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .site-nav .container { flex-wrap: wrap; gap: .6rem 1.2rem; }
+  .home-logo { font-size: 1.5rem; }
+  .nav-items a { font-size: 1rem; }
+  .artist-name { font-size: 2rem; }
+  .article { grid-template-columns: 120px 1fr; }
+  .article .image-wrap { width: 120px; height: 80px; }
+  .site-footer .container { grid-template-columns: 1fr; }
+}

@@ -1,0 +1,32 @@
+{% extends "public_base.html" %}
+{% block title %}{{ ex.title }} — {{ ARTIST_NAME }}{% endblock %}
+{% block content %}
+
+<div class="container">
+  <header class="exhibition-head">
+    <h1 class="ex-title">{{ ex.title }}</h1>
+    {% if ex.date %}<p class="ex-dates">{{ ex.date }}</p>{% endif %}
+    {% if ex.downloads %}
+    <p class="ex-downloads">
+      {% for d in ex.downloads %}<a href="{{ d.url }}" target="_blank" rel="noopener">{{ d.text }}</a>{% if not loop.last %}<br>{% endif %}{% endfor %}
+    </p>
+    {% endif %}
+  </header>
+
+  {% if ex.blurb %}<div class="ex-blurb prose">{{ ex.blurb | md | safe }}</div>{% endif %}
+</div>
+
+{% if ex.images %}
+<div class="bleed-gallery">
+  {% for im in ex.images %}
+  {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+  {% if src %}
+  <figure class="bleed">
+    <img src="{{ src }}" loading="lazy" alt="{{ im.caption or ex.title }}">
+    {% if im.caption %}<figcaption>{{ im.caption }}</figcaption>{% endif %}
+  </figure>
+  {% endif %}
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

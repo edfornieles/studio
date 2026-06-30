@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Studio · {{ ARTIST_NAME }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+  <link rel="stylesheet" href="{{ url_for('static', filename='studio.css') }}">
+</head>
+<body class="site studio">
+<nav class="site-nav">
+  <div class="container">
+    <a class="home-logo" href="{{ url_for('studio_index') }}">Studio</a>
+    <div class="nav-items">
+      <a href="{{ url_for('studio_index') }}">Dashboard</a>
+      <a href="{{ url_for('studio_new') }}">New work</a>
+      <a href="{{ url_for('studio_projects') }}">Projects</a>
+      <a href="{{ url_for('studio_selected') }}">Selected Work</a>
+      <a href="{{ url_for('site_artist') }}" target="_blank" rel="noopener">View site ↗</a>
+    </div>
+  </div>
+</nav>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="container"><div class="flashes">
+    {% for cat, msg in messages %}<div class="flash {{ cat }}">{{ msg }}</div>{% endfor %}
+  </div></div>
+  {% endif %}
+{% endwith %}
+
+<main class="site-main"><div class="container">{% block content %}{% endblock %}</div></main>
+</body>
+</html>

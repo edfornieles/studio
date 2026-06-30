@@ -1,0 +1,19 @@
+# Der Geist: Flesh Feast — A*Desk, "Reveal and reprogram. Interview with Ed Fornieles"
+
+_source: https://a-desk.org/en/magazine/reveal-and-reprogram-interview-with-ed-fornieles/ · accessed 2026-06-10_
+
+Interviewer: María Muñoz-Martínez. Date: 4 June 2018. Theme: New Mysticism.
+
+**On new-age self-care and contemporary mysticism.** Fornieles notes that "the alternative lifestyle became the norm," and is interested in how lifestyle groups try to create mainstream alternatives while often replicating existing power hierarchies. He references his project *The Group*, which uses improvisation to establish "a distinct culture, a way of being, a dietary lifestyle, a series of beliefs and a set of symbols and rituals."
+
+**On *Der Geist: Flesh Feast*, self-management and biohacking.** Asked how diets function as instruments of ideology, Fornieles describes embodying various diets experimentally. He states that "all of these new-age lifestyles and diets are born out of a system taking an approach to the individual and the body," and emphasizes his interest in "the creation and control of identity and its political ramifications." He characterizes dieting as the pinnacle of self-management, where bodies become engineered toward specific goals through dietary and meditative practices. He warns of hidden dangers: "There are also hidden dangers and anxieties on these practices. You might have a set of expectations nearly impossible to achieve; that failure is often a source of anxiety." And: "If you become an ultimate efficient being at some point, you begin to lose your humanity, or you become robotic," part of a broader trend in which "the individual becomes removed from their naturalized narrative."
+
+**On diets and gender.** Historically "a diet was grounded in a community… geographically based and often it had to do with conformity." Post-war weight-loss diets targeted women; contemporary male-focused diets, particularly those emerging from San Francisco's programmer communities, emphasize "brain function" alongside muscularity. He concludes that "these neuron-expanding ones do have embedded in themselves patriarchal concepts for sure."
+
+**On individualism and failure.** "I feel like I am continually failing, which I see as an unconscious by-product of these methods." The diets promise control over personal destiny and produce individualistic worldviews, yet paradoxically create collective identity through shared ethos — "a way of unifying groups" even as participants operate independently.
+
+**On role-play, revealing and reprogramming.** His methodology operates "at two levels, one is revealing some of the mechanisms on how structures underline many of the environments we live in, and you can do that by performing them differently." Through role-play participants recognize attitudes as "not necessarily an integral part of what it is to be you," and "through role play you might be able to reinvent your own behaviour or the institutions you find yourselves in. Playing differently things become mineable and changeable." Hence: performances can "reveal and reprogram." Success comes "when I end up creating a feedback loop between an immersive experience… [and] another space for people to reflect on what has happened to them, and how they can try to reconstruct or deconstruct that."
+
+**On the gallery as social lab.** Artists are "embedded in power structures like everybody else." Galleries can be "a testing ground, where things can be simulated, tested and potentially seeded in the world at large, it is a social lab." He resists art being reduced to "the attached romantic discourse and… generating assets for wealthy people [to] trade."
+
+_Note: answers above are close paraphrase of the published interview with verbatim quoted phrases marked in quotation marks._

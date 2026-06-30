@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap">
+  <link rel="stylesheet" href="{{ url_for('static', filename='site.css') }}">
+</head>
+<body class="site">
+<nav class="site-nav">
+  <div class="container">
+    <a class="home-logo" href="{{ url_for('site_artist') }}">{{ SITE_NAME }}</a>
+    <div class="nav-items">
+      <a href="{{ url_for('site_exhibitions') }}">Exhibitions</a>
+      <a href="{{ url_for('site_library') }}">Library</a>
+      <a href="{{ url_for('site_news') }}">News</a>
+      <a href="{{ url_for('site_contact') }}">Contact</a>
+    </div>
+  </div>
+</nav>
+
+<main class="site-main">{% block content %}{% endblock %}</main>
+
+<footer class="site-footer" id="contact">
+  <div class="container">
+    <div class="foot-col">
+      <p class="foot-name">{{ GALLERY.name }}</p>
+      <p>{% for l in GALLERY.address %}{{ l }}<br>{% endfor %}
+         <a href="{{ GALLERY.map }}" target="_blank" rel="noopener">View map</a></p>
+    </div>
+    <div class="foot-col">
+      <p>{{ GALLERY.hours }}</p>
+      <p>{{ GALLERY.phone }}<br>
+         <a href="mailto:{{ GALLERY.email }}">{{ GALLERY.email }}</a></p>
+    </div>
+    <div class="foot-col">
+      <p>© {{ ARTIST_NAME }}</p>
+    </div>
+  </div>
+</footer>
+</body>
+</html>

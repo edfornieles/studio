@@ -1,0 +1,29 @@
+{% extends "studio_base.html" %}
+{% block title %}Selected Work · Studio{% endblock %}
+{% block content %}
+<p class="back"><a href="{{ url_for('studio_index') }}">← Dashboard</a></p>
+<h1 class="page-head">Selected Work</h1>
+<p class="hint">Tick the images to feature in the front-page carousel, and set an order number (low = first).
+Only public, site-visible works are shown. If nothing is ticked, the carousel falls back to one image per work.</p>
+
+<form method="post" action="{{ url_for('studio_selected') }}">
+  <p><button type="submit">Save carousel</button></p>
+  <div class="select-grid">
+    {% for c in cands %}
+    {% set im = c.rec %}
+    {% set aid = im.asset_id %}
+    {% set src = im.source_url or (url_for('local_asset', relpath=im.local_path) if im.local_path else '') %}
+    {% set on = aid in current %}
+    <label class="select-card {{ 'is-on' if on }}">
+      <img src="{{ src }}" loading="lazy" alt="">
+      <span class="select-row">
+        <input type="checkbox" name="featured" value="{{ aid }}" {{ 'checked' if on }}>
+        <input class="order-input" type="number" name="order_{{ aid }}" value="{{ current.get(aid, '') }}" placeholder="#" min="0" step="1">
+      </span>
+      <span class="select-meta">{{ c.title }}{% if im.caption %} — {{ im.caption }}{% endif %}</span>
+    </label>
+    {% endfor %}
+  </div>
+  <p style="margin-top:1.5rem"><button type="submit">Save carousel</button></p>
+</form>
+{% endblock %}

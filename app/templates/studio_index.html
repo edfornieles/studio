@@ -1,0 +1,26 @@
+{% extends "studio_base.html" %}
+{% block title %}Works · Studio{% endblock %}
+{% block content %}
+<h1 class="page-head">Works</h1>
+<p><a class="btn" href="{{ url_for('studio_new') }}">+ New work</a></p>
+
+<div class="article-grid" style="margin-top:1.6rem">
+  {% for p in tiles %}
+  <a class="article" href="{{ url_for('studio_project', pid=p.project_id) }}">
+    <div class="image-wrap">
+      {% set src = p.thumb.source_url or (url_for('local_asset', relpath=p.thumb.local_path) if p.thumb and p.thumb.local_path else '') if p.thumb else '' %}
+      {% if src %}<img class="autocrop" src="{{ src }}" loading="lazy" alt="">{% else %}<span class="ex-noimg">No image</span>{% endif %}
+    </div>
+    <div class="text">
+      <div class="title">{{ p.title }}</div>
+      <div class="date">{{ p.year if p.year else p.date }}</div>
+      <div class="tile-meta">
+        {{ p.confidentiality }} ·
+        {% if p.public_website_visible %}<span class="live">on site</span>{% else %}hidden{% endif %}
+        · {{ p.image_count }} img{% if p.needs_review %} · review{% endif %}
+      </div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}
