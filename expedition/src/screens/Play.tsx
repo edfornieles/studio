@@ -8,7 +8,7 @@ import { Strandy } from '../components/Strandy';
 import { StrandySays } from '../components/StrandySays';
 import { FoldCanvas, RESIDUE_COLORS } from '../game/FoldCanvas';
 import type { GameEvent, Residue, Snapshot } from '../game/types';
-import { shareCard } from '../lib/shareCard';
+import { shareCard, type ShareResult } from '../lib/shareCard';
 import { useProgress } from '../state/progress';
 import { activeWorld } from '../worlds';
 import { debriefs, finale } from '../worlds/proteins/copy';
@@ -299,7 +299,8 @@ export function Play({ go }: { go: (tab: 'fieldwork' | 'community') => void }) {
 }
 
 function Finale({ onReplay, go, results }: { onReplay: () => void; go: (tab: 'fieldwork' | 'community') => void; results: { title: string; r?: { bestStability: number; seconds: number } }[] }) {
-  const [shareState, setShareState] = useState('');
+  const [card, setCard] = useState<ShareResult | null>(null);
+  const [copied, setCopied] = useState('');
   const total = results.reduce((s, x) => s + (x.r?.seconds ?? 0), 0);
   const share = async () => {
     const res = await shareCard({
@@ -307,7 +308,16 @@ function Finale({ onReplay, go, results }: { onReplay: () => void; go: (tab: 'fi
       lines: results.map((x) => `✓ ${x.title}${x.r ? ` · ${Math.round(x.r.bestStability * 100)}% stable` : ''}`),
       footer: 'The Folding Problem · a Claude field expedition',
     });
-    setShareState(res === 'shared' ? 'Shared.' : res === 'downloaded' ? 'Card saved. The text is copied too.' : res === 'copied' ? 'Copied as text.' : '');
+    setCopied('');
+    setCard(res);
+  };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(card?.text ?? '');
+      setCopied('Copied.');
+    } catch {
+      setCopied('Copying isn’t allowed here. Select the text below instead.');
+    }
   };
   return (
     <article className="finale">
@@ -332,11 +342,24 @@ function Finale({ onReplay, go, results }: { onReplay: () => void; go: (tab: 'fi
       <button className="btn btn--ghost btn--block" onClick={share}>
         <Icon name="share" size={20} /> Share your result card
       </button>
-      {shareState && (
+      {card?.status === 'shared' && (
         <p className="fine" role="status">
-          {shareState}
+          Shared.
         </p>
       )}
+      <Sheet open={card?.status === 'show'} onClose={() => setCard(null)} title="Your result card">
+        {card?.url && <img className="share-img" src={card.url} alt="Result card: I folded a protein. Sort of." />}
+        <p className="fine">Press and hold (or right-click) the card to save it.</p>
+        <button className="btn btn--ghost btn--block" onClick={copy}>
+          Copy as text
+        </button>
+        {copied && (
+          <p className="fine" role="status">
+            {copied}
+          </p>
+        )}
+        <pre className="share-text">{card?.text}</pre>
+      </Sheet>
       <div className="finale__next">
         <StrandySays pose="point" size={64}>
           The lab is closed, but the expedition isn’t. Real scientific curiosity starts outside.

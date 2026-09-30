@@ -2422,3 +2422,18 @@ select.input {
     padding-right: 24px;
   }
 }
+
+.share-img {
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  margin-bottom: 8px;
+}
+
+.share-text {
+  text-align: left;
+  white-space: pre-wrap;
+  font: 400 14px/1.5 var(--mono);
+  color: var(--muted);
+  user-select: all;
+  margin: 10px 0 0;
+}

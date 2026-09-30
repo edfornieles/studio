@@ -30,6 +30,7 @@ export function App() {
   const [tab, setTab] = useState<Tab>(initial && initial !== 'opening' ? initial : 'explore');
   const [menu, setMenu] = useState(false);
   const [screenKey, setScreenKey] = useState(0);
+  const [confirmReset, setConfirmReset] = useState(false);
 
   const go = useCallback((t: Tab) => {
     setTab(t);
@@ -94,7 +95,14 @@ export function App() {
             ))}
           </nav>
 
-          <Sheet open={menu} onClose={() => setMenu(false)} title="Expedition">
+          <Sheet
+            open={menu}
+            onClose={() => {
+              setMenu(false);
+              setConfirmReset(false);
+            }}
+            title="Expedition"
+          >
             <p className="lede">Progress: {Math.round(percent * 100)}%. Everything is saved on this device only.</p>
             <div className="stack">
               <button
@@ -120,15 +128,24 @@ export function App() {
               <button
                 className="btn btn--danger btn--block"
                 onClick={() => {
-                  if (!confirm('Erase your progress, hypotheses and field notes from this device?')) return;
+                  if (!confirmReset) {
+                    setConfirmReset(true);
+                    return;
+                  }
                   clearCommunity();
                   resetAll();
+                  setConfirmReset(false);
                   setMenu(false);
                   setShowOpening(true);
                 }}
               >
-                Reset everything
+                {confirmReset ? 'Tap again to erase everything' : 'Reset everything'}
               </button>
+              {confirmReset && (
+                <p className="fine" role="status">
+                  This erases your progress, hypotheses and field notes from this device.
+                </p>
+              )}
             </div>
           </Sheet>
         </div>

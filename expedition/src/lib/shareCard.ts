@@ -6,8 +6,14 @@ export interface ShareInput {
   footer: string;
 }
 
-/** Draw a portrait share card, then share it (or download it as a fallback). */
-export async function shareCard(input: ShareInput): Promise<'shared' | 'downloaded' | 'copied' | 'failed'> {
+/** Draw a portrait share card, then share it, or return it for display. */
+export interface ShareResult {
+  status: 'shared' | 'show' | 'failed';
+  url?: string;
+  text: string;
+}
+
+export async function shareCard(input: ShareInput): Promise<ShareResult> {
   const c = document.createElement('canvas');
   c.width = 1080;
   c.height = 1350;
@@ -73,34 +79,19 @@ export async function shareCard(input: ShareInput): Promise<'shared' | 'download
 
   const blob: Blob | null = await new Promise((r) => c.toBlob(r, 'image/png'));
   const text = `${input.title}\n${input.lines.join('\n')}\n${input.footer}`;
-  if (blob) {
-    const file = new File([blob], 'folding-expedition.png', { type: 'image/png' });
-    try {
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], text });
-        return 'shared';
-      }
-    } catch (e) {
-      if ((e as Error).name === 'AbortError') return 'failed';
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = file.name;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 2000);
-    try {
-      await navigator.clipboard?.writeText(text);
-    } catch {
-      /* clipboard optional */
-    }
-    return 'downloaded';
-  }
+  if (!blob) return { status: 'failed', text };
+  const url = URL.createObjectURL(blob);
+  const file = new File([blob], 'folding-expedition.png', { type: 'image/png' });
   try {
-    await navigator.clipboard.writeText(text);
-    return 'copied';
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share({ files: [file], text });
+      return { status: 'shared', url, text };
+    }
   } catch {
-    return 'failed';
+    /* share refused or cancelled: fall through to showing the card */
   }
+  // Show the card in the page; people save it with a long-press or right-click.
+  return { status: 'show', url, text };
 }
 
 function wrap(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, max: number, lh: number) {
