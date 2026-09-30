@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>The Discovery Stack · Claude in the Life Sciences</title>
+  <meta name="description" content="The people, technologies, companies and discoveries showing what becomes possible when Claude works alongside scientists.">
+  <link rel="icon" href="img/spark.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <a class="nav_brand" href="#top" aria-label="Claude — The Discovery Stack"><img src="img/spark.svg" alt="" width="22" height="22"><span>Claude</span></a>
+    <div class="nav_links">
+      <a href="#top" class="active">Story</a>
+      <a href="#explore">Explore</a>
+      <a href="#sources">Sources</a>
+    </div>
+  </nav>
+
+  <main id="top">
+    <!-- ── Hero ─────────────────────────────── -->
+    <header class="hero" id="hero">
+      <svg class="hero_bg" id="hero-bg" aria-hidden="true"></svg>
+      <div class="hero_inner">
+        <p class="eyebrow">Claude in the Life Sciences</p>
+        <h1>The Discovery Stack</h1>
+        <h2>How AI is widening the frontier of biology, and what scientists are already doing with it</h2>
+        <a class="hero_cta" href="#hook">Scroll to explore <span class="bounce">↓</span></a>
+      </div>
+    </header>
+
+    <!-- ── Hook ─────────────────────────────── -->
+    <section class="content_section soft" id="hook">
+      <div class="content">
+        <h1 class="section_title">Twenty-One Hours</h1>
+        <hr>
+        <p class="capitalize">In September 2026, about 950 Claude agents set out on a search no human team would have had time to run. Over twenty-one hours they worked through more than 200,000 reverse transcriptases, the enzymes that copy RNA into DNA, looking for anything unusual.</p>
+        <p>They narrowed the field to 3,500 candidate systems, then to twenty proposals for scientists to test. Human researchers in Anthropic's lab took the most promising one to the bench and expressed it. Anthropic reports it as a previously uncharacterized family of <strong>array-associated reverse transcriptases</strong>, arranged with repeats reminiscent of CRISPR.</p>
+        <p>What it does is still unknown. That is the point. The agents didn't replace the scientists; they widened the field of view, and the lab now has a new question to answer.</p>
+        <blockquote class="pull">“What AlphaFold achieved is incredible. But what we're talking about here is different.” <cite>Jonah Cool, Anthropic</cite></blockquote>
+        <p>This is the story beneath the headlines about AI: steady, verifiable progress in labs, clinics and field hospitals, and the exploration it opens up.</p>
+      </div>
+    </section>
+
+    <!-- ── Explorers ────────────────────────── -->
+    <section class="content_section" id="explorers">
+      <div class="content subsection">
+        <h1 class="section_title">The Explorers</h1>
+        <hr>
+        <p>A small group of builders and scientists is shaping how AI enters research, from Anthropic's life sciences team to the labs putting Claude to work.</p>
+        <p class="hint">Select a name for more</p>
+      </div>
+      <div class="wide explorers_wrap scroll_x">
+        <svg id="explorers-svg" class="graph_container" viewBox="0 0 1000 640" role="img" aria-label="Network of people and institutions"></svg>
+        <aside class="explorer_card" id="explorer-card" hidden>
+          <button class="close" aria-label="Close">×</button>
+          <div class="explorer_card_body"></div>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ── Accelerations ────────────────────── -->
+    <section class="content_section soft" id="accelerations">
+      <div class="content subsection">
+        <h1 class="section_title">From Weeks to Minutes</h1>
+        <hr>
+        <p>The first thing AI changes is time. Work that used to take weeks now takes minutes, and scientists spend the difference on thinking.</p>
+      </div>
+      <div class="wide accel_list" id="accel-list"></div>
+    </section>
+
+    <!-- ── Loop ─────────────────────────────── -->
+    <section class="content_section" id="loop">
+      <div class="content subsection">
+        <h1 class="section_title">The Research Loop</h1>
+        <hr>
+        <p>Science is a loop, not a line. Claude now helps at every turn, while experiments in the physical world stay the final judge.</p>
+      </div>
+      <div class="wide loop_wrap">
+        <svg id="loop-svg" viewBox="0 0 560 560" role="img" aria-label="The research loop"></svg>
+        <div class="loop_detail" id="loop-detail" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <!-- ── Connected lab ────────────────────── -->
+    <section class="content_section soft" id="connected">
+      <div class="content subsection">
+        <h1 class="section_title">The Connected Lab</h1>
+        <hr>
+        <p>The shift comes from connection. Open standards such as the Model Context Protocol link Claude to the databases, notebooks and instruments scientists already use.</p>
+        <p class="hint">Hover or tap a node to trace its connections</p>
+      </div>
+      <div class="wide scroll_x">
+        <svg id="flow-svg" viewBox="0 0 1100 560" role="img" aria-label="How knowledge and lab systems flow through Claude into outcomes"></svg>
+      </div>
+      <div class="wide stats" id="stats"></div>
+    </section>
+
+    <!-- ── Frontiers ────────────────────────── -->
+    <section class="content_section dark" id="frontiers">
+      <div class="content subsection">
+        <h1 class="section_title">Five Frontiers</h1>
+        <hr>
+        <p>From the first question to the patient, here is what is becoming possible, and where it is already happening.</p>
+      </div>
+      <div class="wide frontiers_wrap">
+        <svg id="frontiers-illus" class="frontiers_illus" viewBox="0 0 1200 520" aria-hidden="true"></svg>
+        <div class="frontier_cards" id="frontier-cards"></div>
+      </div>
+    </section>
+
+    <!-- ── Map ──────────────────────────────── -->
+    <section class="content_section" id="world">
+      <div class="content subsection">
+        <h1 class="section_title">A Global Effort</h1>
+        <hr>
+        <p>The work spans the Bay Area, Copenhagen and Kinshasa, where Claude helped assemble Ebola genomes during an active outbreak.</p>
+      </div>
+      <div class="wide map_wrap">
+        <svg id="map-svg" viewBox="0 0 960 500" role="img" aria-label="World map of Claude life sciences work"></svg>
+        <div class="zoom_controls" id="map-zoom">
+          <button data-z="in" aria-label="Zoom in">+</button><button data-z="out" aria-label="Zoom out">−</button><button data-z="reset" aria-label="Reset zoom">⟲</button>
+        </div>
+        <aside class="map_card" id="map-card" hidden></aside>
+      </div>
+    </section>
+
+    <!-- ── Safeguards ───────────────────────── -->
+    <section class="content_section soft" id="responsible">
+      <div class="content subsection">
+        <h1 class="section_title">Responsible by Design</h1>
+        <hr>
+        <p>Exploration needs trust. These safeguards are what let scientists move faster without cutting corners.</p>
+      </div>
+      <div class="wide safeguards" id="safeguards"></div>
+    </section>
+
+    <!-- ── Horizon ──────────────────────────── -->
+    <section class="content_section" id="horizon">
+      <div class="content subsection">
+        <h1 class="section_title">The Horizon</h1>
+        <hr>
+        <p>Each step so far is modest and verifiable. Together they point somewhere much bigger.</p>
+      </div>
+      <div class="wide timeline" id="timeline"></div>
+      <div class="content">
+        <blockquote class="pull">AI-enabled biology could compress “the progress that human biologists would have achieved over the next 50–100 years into 5–10 years.” <cite>Dario Amodei, “Machines of Loving Grace”</cite></blockquote>
+        <p>These are aspirations, not promises. Cells grow at their own pace and trials take time. But the goals give the work its direction:</p>
+      </div>
+      <div class="wide horizon_grid" id="horizon-grid"></div>
+    </section>
+
+    <!-- ── Explorer map ─────────────────────── -->
+    <section class="map_section soft" id="explore">
+      <div class="map_sticky">
+        <svg id="net-svg" class="net_svg"></svg>
+        <div class="map_title">
+          <h2>The Discovery Stack</h2>
+          <h3>Explore the Network</h3>
+          <p>Hover or select any organization to see its connections.</p>
+          <button class="pill" id="open-list">Search <span aria-hidden="true">⌕</span></button>
+        </div>
+        <div class="legend" id="legend"><h4>Connections</h4></div>
+        <div class="zoom_controls" id="net-zoom">
+          <button data-z="in" aria-label="Zoom in">+</button><button data-z="out" aria-label="Zoom out">−</button><button data-z="reset" aria-label="Reset zoom">⟲</button>
+        </div>
+        <aside class="panel actor_card" id="actor-card" hidden></aside>
+        <aside class="panel list_view" id="list-view" hidden>
+          <div class="panel_head"><input type="search" id="list-search" placeholder="Search organizations" aria-label="Search organizations"><button class="close" id="close-list" aria-label="Close">×</button></div>
+          <div class="sort" id="list-sort">Sort by <button data-s="az" class="active">A–Z</button><button data-s="conn">Connections</button><button data-s="zone">Group</button></div>
+          <ul id="list-items"></ul>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ── Credits / sources ────────────────── -->
+    <footer class="content_section darkest after_map" id="sources">
+      <div class="content">
+        <h4>About this project</h4>
+        <p>The Discovery Stack maps publicly reported uses of Claude in the life sciences as of September 2026. Every organization, connection and figure links to a public source. Claims we could not verify independently were left out.</p>
+        <h4>Sources</h4>
+        <ol class="source_list" id="source-list"></ol>
+        <p class="small">Figures are as reported by the organizations involved. “Machines of Loving Grace” goals are long-term aspirations, not forecasts.</p>
+      </div>
+    </footer>
+  </main>
+
+  <a class="jump" id="jump" href="#explore" hidden>↓ <span>Jump to Network</span></a>
+
+  <script src="vendor/d3.min.js"></script>
+  <script src="vendor/topojson-client.min.js"></script>
+  <script src="data/network.js"></script>
+  <script src="data/story.js"></script>
+  <script src="data/world.js"></script>
+  <script src="js/network.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
