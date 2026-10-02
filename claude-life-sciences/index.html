@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>The Discovery Stack · Claude in the Life Sciences</title>
-  <meta name="description" content="The people, technologies, companies and discoveries showing what becomes possible when Claude works alongside scientists.">
+  <title>The Discovery Stack · AI in the Life Sciences</title>
+  <meta name="description" content="Sixty years of AI in the life sciences: the people, breakthroughs, companies and medicines, and how Claude is helping scientists explore what comes next.">
   <link rel="icon" href="img/spark.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,6 +16,8 @@
     <a class="nav_brand" href="#top" aria-label="Claude — The Discovery Stack"><img src="img/spark.svg" alt="" width="22" height="22"><span>Claude</span></a>
     <div class="nav_links">
       <a href="#top" class="active">Story</a>
+      <a href="#history">History</a>
+      <a href="#clinic">Medicines</a>
       <a href="#explore">Explore</a>
       <a href="#sources">Sources</a>
     </div>
@@ -26,9 +28,9 @@
     <header class="hero" id="hero">
       <svg class="hero_bg" id="hero-bg" aria-hidden="true"></svg>
       <div class="hero_inner">
-        <p class="eyebrow">Claude in the Life Sciences</p>
+        <p class="eyebrow">AI in the Life Sciences · 1962–2026</p>
         <h1>The Discovery Stack</h1>
-        <h2>How AI is widening the frontier of biology, and what scientists are already doing with it</h2>
+        <h2>Sixty years of machines that help us understand life, and how Claude is helping scientists explore what comes next</h2>
         <a class="hero_cta" href="#hook">Scroll to explore <span class="bounce">↓</span></a>
       </div>
     </header>
@@ -36,26 +38,50 @@
     <!-- ── Hook ─────────────────────────────── -->
     <section class="content_section soft" id="hook">
       <div class="content">
-        <h1 class="section_title">Twenty-One Hours</h1>
+        <h1 class="section_title">From One Program to 950 Agents</h1>
         <hr>
-        <p class="capitalize">In September 2026, about 950 Claude agents set out on a search no human team would have had time to run. Over twenty-one hours they worked through more than 200,000 reverse transcriptases, the enzymes that copy RNA into DNA, looking for anything unusual.</p>
-        <p>They narrowed the field to 3,500 candidate systems, then to twenty proposals for scientists to test. Human researchers in Anthropic's lab took the most promising one to the bench and expressed it. Anthropic reports it as a previously uncharacterized family of <strong>array-associated reverse transcriptases</strong>, arranged with repeats reminiscent of CRISPR.</p>
-        <p>What it does is still unknown. That is the point. The agents didn't replace the scientists; they widened the field of view, and the lab now has a new question to answer.</p>
+        <p class="capitalize">In 1965, at Stanford, a program called DENDRAL tried to do one thing a chemist does: work out a molecule's structure from its mass spectrum. It is often called the first expert system, the first time a computer was asked to reason about science.</p>
+        <p>In September 2026, about 950 Claude agents worked through more than 200,000 enzymes in twenty-one hours, narrowing them to twenty proposals for scientists to test. Human researchers in Anthropic's lab took the most promising one to the bench and expressed it. Anthropic reports it as a previously uncharacterized family of <strong>array-associated reverse transcriptases</strong>. What it does is still unknown, so the lab now has a new question to answer.</p>
+        <p>Between those two moments lie sixty years of patient work: open databases, blind competitions, two Nobel Prizes, and failures the field learned from. None of it replaced scientists. All of it widened what they could see.</p>
         <blockquote class="pull">“What AlphaFold achieved is incredible. But what we're talking about here is different.” <cite>Jonah Cool, Anthropic</cite></blockquote>
-        <p>This is the story beneath the headlines about AI: steady, verifiable progress in labs, clinics and field hospitals, and the exploration it opens up.</p>
+        <p>This is the story beneath the headlines about AI: a long, steady, verifiable history, and the exploration it is opening up now.</p>
+      </div>
+    </section>
+
+    <!-- ── History ──────────────────────────── -->
+    <section class="content_section" id="history">
+      <div class="content subsection">
+        <h1 class="section_title">Sixty Years of Progress</h1>
+        <hr>
+        <p>AI in biology didn't arrive overnight. It was built era by era, each standing on the open data and hard lessons of the last.</p>
+        <p class="hint">Choose an era, or select any point on the timeline</p>
+      </div>
+      <div class="wide hist">
+        <div class="hist_strip_wrap scroll_x">
+          <svg id="hist-strip" viewBox="0 0 1200 160" role="img" aria-label="Timeline of AI in the life sciences, 1962 to 2026"></svg>
+          <div class="hist_tip" id="hist-tip" hidden></div>
+        </div>
+        <div class="hist_key"><span><i class="k m"></i>Milestone</span><span><i class="k lesson"></i>Lesson learned</span><span><i class="k claude"></i>Claude</span></div>
+        <div class="era_tabs" id="era-tabs"></div>
+        <div class="era_head" id="era-head" aria-live="polite"></div>
+        <div class="ms_wrap">
+          <button class="ms_nav" id="ms-prev" aria-label="Previous milestones">‹</button>
+          <div class="ms_row" id="ms-row"></div>
+          <button class="ms_nav" id="ms-next" aria-label="Next milestones">›</button>
+        </div>
       </div>
     </section>
 
     <!-- ── Explorers ────────────────────────── -->
-    <section class="content_section" id="explorers">
+    <section class="content_section soft" id="explorers">
       <div class="content subsection">
         <h1 class="section_title">The Explorers</h1>
         <hr>
-        <p>A small group of builders and scientists is shaping how AI enters research, from Anthropic's life sciences team to the labs putting Claude to work.</p>
+        <p>Six decades of people who taught machines about life, and the ones carrying their work forward. Follow the threads from the first databases to Claude.</p>
         <p class="hint">Select a name for more</p>
       </div>
       <div class="wide explorers_wrap scroll_x">
-        <svg id="explorers-svg" class="graph_container" viewBox="0 0 1000 640" role="img" aria-label="Network of people and institutions"></svg>
+        <svg id="explorers-svg" class="graph_container" viewBox="0 0 1000 640" role="img" aria-label="People who shaped AI in the life sciences, placed by year"></svg>
         <aside class="explorer_card" id="explorer-card" hidden>
           <button class="close" aria-label="Close">×</button>
           <div class="explorer_card_body"></div>
@@ -64,7 +90,7 @@
     </section>
 
     <!-- ── Accelerations ────────────────────── -->
-    <section class="content_section soft" id="accelerations">
+    <section class="content_section" id="accelerations">
       <div class="content subsection">
         <h1 class="section_title">From Weeks to Minutes</h1>
         <hr>
@@ -73,12 +99,28 @@
       <div class="wide accel_list" id="accel-list"></div>
     </section>
 
+    <!-- ── Medicines in the clinic ─────────── -->
+    <section class="content_section soft" id="clinic">
+      <div class="content subsection">
+        <h1 class="section_title">Medicines in the Clinic</h1>
+        <hr>
+        <p>The real test of AI in medicine is patients. No AI-discovered drug has yet won FDA approval as a new molecule. But the pipeline is real, the first decisions are close, and the early numbers are encouraging.</p>
+        <p class="hint">Select a medicine for its story</p>
+      </div>
+      <div class="wide pipe_wrap">
+        <div class="pipe_legend" id="pipe-legend"></div>
+        <div class="scroll_x"><div class="pipeline" id="pipeline"></div></div>
+      </div>
+      <div class="wide stats" id="pipe-stats"></div>
+      <p class="wide pipe_src" id="pipe-src"></p>
+    </section>
+
     <!-- ── Loop ─────────────────────────────── -->
     <section class="content_section" id="loop">
       <div class="content subsection">
         <h1 class="section_title">The Research Loop</h1>
         <hr>
-        <p>Science is a loop, not a line. Claude now helps at every turn, while experiments in the physical world stay the final judge.</p>
+        <p>Science is a loop, not a line. AI now helps at every turn, Claude among it, while experiments in the physical world stay the final judge.</p>
       </div>
       <div class="wide loop_wrap">
         <svg id="loop-svg" viewBox="0 0 560 560" role="img" aria-label="The research loop"></svg>
@@ -91,7 +133,7 @@
       <div class="content subsection">
         <h1 class="section_title">The Connected Lab</h1>
         <hr>
-        <p>The shift comes from connection. Open standards such as the Model Context Protocol link Claude to the databases, notebooks and instruments scientists already use.</p>
+        <p>Claude stands on sixty years of shared work. Open standards like the Model Context Protocol connect it to the field’s databases, models and lab systems, so a scientist can use them all in one conversation.</p>
         <p class="hint">Hover or tap a node to trace its connections</p>
       </div>
       <div class="wide scroll_x">
@@ -105,7 +147,7 @@
       <div class="content subsection">
         <h1 class="section_title">Five Frontiers</h1>
         <hr>
-        <p>From the first question to the patient, here is what is becoming possible, and where it is already happening.</p>
+        <p>Five frontiers where AI is changing what biology can do: where each began, where it stands today, Claude’s part, and what comes next.</p>
       </div>
       <div class="wide frontiers_wrap">
         <svg id="frontiers-illus" class="frontiers_illus" viewBox="0 0 1200 520" aria-hidden="true"></svg>
@@ -116,9 +158,9 @@
     <!-- ── Map ──────────────────────────────── -->
     <section class="content_section" id="world">
       <div class="content subsection">
-        <h1 class="section_title">A Global Effort</h1>
+        <h1 class="section_title">A Global Field</h1>
         <hr>
-        <p>The work spans the Bay Area, Copenhagen and Kinshasa, where Claude helped assemble Ebola genomes during an active outbreak.</p>
+        <p>From London and Hong Kong to Basel and Kinshasa, the work is spread across labs, companies and public institutions worldwide.</p>
       </div>
       <div class="wide map_wrap">
         <svg id="map-svg" viewBox="0 0 960 500" role="img" aria-label="World map of Claude life sciences work"></svg>
@@ -134,7 +176,7 @@
       <div class="content subsection">
         <h1 class="section_title">Responsible by Design</h1>
         <hr>
-        <p>Exploration needs trust. These safeguards are what let scientists move faster without cutting corners.</p>
+        <p>Exploration needs trust. Over sixty years the field has built the habits and safeguards that let scientists move faster without cutting corners.</p>
       </div>
       <div class="wide safeguards" id="safeguards"></div>
     </section>
@@ -144,7 +186,7 @@
       <div class="content subsection">
         <h1 class="section_title">The Horizon</h1>
         <hr>
-        <p>Each step so far is modest and verifiable. Together they point somewhere much bigger.</p>
+        <p>Each step so far is modest and verifiable. The next few are already scheduled, and together they point somewhere much bigger.</p>
       </div>
       <div class="wide timeline" id="timeline"></div>
       <div class="content">
@@ -160,8 +202,8 @@
         <svg id="net-svg" class="net_svg"></svg>
         <div class="map_title">
           <h2>The Discovery Stack</h2>
-          <h3>Explore the Network</h3>
-          <p>Hover or select any organization to see its connections.</p>
+          <h3>The Field Today</h3>
+          <p>96 organizations across AI labs, biotech, pharma, research and regulators. Hover or select any of them to see their connections.</p>
           <button class="pill" id="open-list">Search <span aria-hidden="true">⌕</span></button>
         </div>
         <div class="legend" id="legend"><h4>Connections</h4></div>
@@ -181,7 +223,7 @@
     <footer class="content_section darkest after_map" id="sources">
       <div class="content">
         <h4>About this project</h4>
-        <p>The Discovery Stack maps publicly reported uses of Claude in the life sciences as of September 2026. Every organization, connection and figure links to a public source. Claims we could not verify independently were left out.</p>
+        <p>The Discovery Stack traces the history of AI in the life sciences from the 1960s, and maps the field as publicly reported in September 2026, with Claude as its through-line. Every organization, connection and figure links to a public source. Claims we could not verify independently were left out.</p>
         <h4>Sources</h4>
         <ol class="source_list" id="source-list"></ol>
         <p class="small">Figures are as reported by the organizations involved. “Machines of Loving Grace” goals are long-term aspirations, not forecasts.</p>
@@ -189,7 +231,7 @@
     </footer>
   </main>
 
-  <a class="jump" id="jump" href="#explore" hidden>↓ <span>Jump to Network</span></a>
+  <a class="jump" id="jump" href="#explore" hidden>↓ <span>Jump to the field today</span></a>
 
   <script src="vendor/d3.min.js"></script>
   <script src="vendor/topojson-client.min.js"></script>

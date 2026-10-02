@@ -1,14 +1,18 @@
-# The Discovery Stack — Claude in the Life Sciences
+# The Discovery Stack — AI in the Life Sciences
 
-A single-page scrollytelling site showing the people, technologies, companies and
-use cases of Claude in the life sciences, and the future they point toward. The
-layout and interaction model follow the reference site
-[authoritarian-stack.info](https://www.authoritarian-stack.info/), restyled in the
-Claude visual language.
+A single-page scrollytelling site covering **sixty years of AI in the life
+sciences**, from DENDRAL (1965) to today's AI collaborators, and mapping the
+field as it stands in September 2026. **Claude is the through-line**: each era
+ends with a "thread to Claude", and the present-day sections show where Claude
+fits in a much larger field.
 
-**Campaign goal:** ease the scare stories about AI by showing concrete,
-verifiable advances in the life sciences and the exploration they make
-possible.
+The layout and interaction model follow
+[authoritarian-stack.info](https://www.authoritarian-stack.info/), restyled in
+the Claude visual language.
+
+**Campaign goal:** ease the scare stories about AI by showing a long, credible
+history of steady progress, the hard lessons the field learned, and the real
+advances and exploration it makes possible today.
 
 ## Run it
 
@@ -26,42 +30,54 @@ sans fonts. It can be hosted on any static host, such as GitHub Pages or Netlify
 
 | Path | What it holds |
 |---|---|
-| `index.html` | Page structure: 11 sections, in story order |
+| `index.html` | Page structure: 14 sections in story order |
 | `css/style.css` | Design tokens (Claude palette, type, rules) and all component styles |
-| `js/main.js` | Narrative sections: hero fade, Explorers graph, before→after rows, research loop, connected-lab flow, frontier cards, world map, safeguards, timeline |
+| `js/main.js` | Narrative components: history strip and era cards, Explorers across time, before→after rows, medicines pipeline, research loop, connected-lab flow, frontier cards, world map, safeguards, timeline |
 | `js/network.js` | The full-screen network explorer: zones, hover, select, actor card, list/search, legend filter, zoom |
-| `data/network.js` | **Network dataset**: 69 organizations and 81 connections, each with public sources |
-| `data/story.js` | **Narrative data** for every section (edit copy and figures here) |
+| `data/story.js` | **Narrative data**: 6 eras and 66 milestones, 19 explorers, 11 medicines, 5 frontiers, 28 places, safeguards, horizon |
+| `data/network.js` | **Network dataset**: 96 organizations and 109 connections across the field, each with public sources |
 | `data/world.js` | Natural Earth 110m countries (world-atlas) |
-| `img/spark.svg` | Placeholder spark mark; see branding below |
+| `img/spark.svg`, `img/spark-white.svg` | Placeholder spark marks; see branding below |
 
-## Story sections (reference → this site)
+## Story sections
 
-1. Hero → **The Discovery Stack**, with a faint render of the network behind it.
-2. "The Contract That Changed Everything" → **Twenty-One Hours**: about 950 agents surface a new enzyme family.
-3. Kingmakers → **The Explorers**: people and institutions; select one for a card.
-4. Personnel pipeline → **From Weeks to Minutes**: animated before→after rows.
-5. Loop diagram → **The Research Loop**: six steps that cycle automatically; Test is marked as human-run.
-6. Capital flows → **The Connected Lab**: knowledge → lab systems → Claude → outcomes, plus a stats row.
-7. Five domains → **Five Frontiers**: an illustration with expandable cards.
-8. Europe map → **A Global Effort**: a zoomable world map with place cards.
-9. (new) **Responsible by Design**: five safeguards, each with a source.
-10. Conclusion → **The Horizon**: a 2024–2026 timeline and the long-term goals from "Machines of Loving Grace".
-11. Network explorer → **Explore the Network**, then Sources.
+1. **Hero:** The Discovery Stack, 1962–2026.
+2. **From One Program to 950 Agents:** DENDRAL in 1965, then Claude agents in 2026.
+3. **Sixty Years of Progress:** an era strip with 66 milestones (including "lessons learned") and a "thread to Claude" for each era.
+4. **The Explorers:** people from Dayhoff to Jumper, placed by year, with lineage threads leading to Claude.
+5. **From Weeks to Minutes:** animated before→after rows.
+6. **Medicines in the Clinic:** a pipeline of AI-discovered and AI-assisted drugs by trial phase, colored by approach, including discontinued ones, plus success-rate stats.
+7. **The Research Loop:** six steps; the Test step is marked as run by human scientists.
+8. **The Connected Lab:** open data → the field's models → Claude → outcomes.
+9. **Five Frontiers:** protein design, the virtual cell, reading genomes, AI scientists and labs, medicines. Each card covers where it started, where it is now, Claude's part, and what's next.
+10. **A Global Field:** a zoomable world map of 28 sites.
+11. **Responsible by Design:** six field-wide safeguards.
+12. **The Horizon:** the 2026 timeline, items expected next, and "Machines of Loving Grace" goals.
+13. **The Field Today:** the network explorer.
+14. **Sources.**
 
 ## Editing content
 
-- Add an organization in `data/network.js`: a node needs
-  `{ id, name, type, zone, description, sources }`; add `size: "large"` for a
-  labelled hub. Zones are `anthropic | pharma | research | tools | builders | partners`.
+- Add an organization in `data/network.js` as a row in `N`:
+  `[id, name, type, zone, description, sources, large?]`. Zones are
+  `anthropic | labs | biotech | pharma | research | tools | policy`.
 - Add a connection as `[source, target, type, label, description, sources]`.
-  Types are `deploys | connects | research | builds | validates`.
+  Types are `uses | data | research | builds | invests | deal`.
+- Add a milestone in `data/story.js` → `milestones`, as `{ y, era, kind?, t, who, what, why, src }`.
+  `kind` is `"lesson"` or `"claude"`.
+- Add a medicine to `pipeline.drugs` as `{ name, org, stage 0–5, approach, stopped?, note, src }`.
 - Descriptions support `**bold**`.
 
 ## Editorial rules
 
 - Every claim cites a public source, and all sources are listed in the footer.
+- **No AI-discovered drug has FDA approval as a new molecule** (as of Sept 2026), and the site says so.
+  Zasocitinib is labelled "physics-based computation", not generative AI. Baricitinib is an
+  AI-suggested *repurposing* that was proven in large trials.
+- Setbacks are shown alongside successes as "lessons learned": Watson for Oncology,
+  the sepsis model, Valo's Phase 2 failure, and DSP-1181.
 - The following were **left out because the research could not verify them**:
+  - GSK's reported acquisition of Noetik; funding rounds still "in talks" (Lila, Periodic)
   - the Eli Lilly partnership (aggregator coverage only)
   - the Coefficient Bio acquisition (not officially confirmed)
   - whether Kosmos runs on Claude
@@ -85,7 +101,11 @@ serif and **DM Sans** for the sans. For an official release:
 - Have legal and comms review the named individuals in "The Explorers" and all
   customer mentions.
 
-The chart palette (edge types and map categories) was checked with a colorblind
-validator: clay `#D97757`, blue `#3F7FC4`, green `#5E8C3A`, violet `#8A63C9`,
-ochre `#B07A14`. The ochre is below 3:1 contrast against the background, so it
-always appears with a text label.
+The six-color chart palette (connection types, map categories, pipeline approaches)
+passes a colorblind validator: clay `#D97757`, blue `#3F7FC4`, green `#5E8C3A`,
+violet `#8A63C9`, ochre `#B07A14`, magenta `#C2477F`.
+
+## Link check
+
+Many history sources are doi.org links that were written from memory during
+research, and not all were opened individually. Run a link checker before launch.

@@ -1,14 +1,15 @@
 /* The Discovery Stack — network explorer (d3 v7).
  * Static, zone-clustered layout; edges appear on hover/select/legend filter. */
 (function () {
-  const W = 1300, H = 1250;
+  const W = 1480, H = 1440;
   const ZONES = {
-    pharma:    { cx: 330, cy: 390, r: 245, label: "Pharma & Biotech" },
-    research:  { cx: 970, cy: 390, r: 245, label: "Research & Public Health" },
-    tools:     { cx: 960, cy: 960, r: 285, label: "Tools, Data & Compute" },
-    builders:  { cx: 330, cy: 950, r: 205, label: "Builders" },
-    partners:  { cx: 650, cy: 115, r: 115, label: "Cloud & Integrators" },
-    anthropic: { cx: 650, cy: 660, r: 150, label: "Anthropic", open: true },
+    labs:      { cx: 740, cy: 165, r: 140, label: "AI Labs & Big Tech" },
+    biotech:   { cx: 1190, cy: 490, r: 300, label: "AI-Native Biotech" },
+    pharma:    { cx: 1140, cy: 1090, r: 250, label: "Pharma" },
+    policy:    { cx: 740, cy: 1265, r: 115, label: "Regulators & Funders" },
+    research:  { cx: 330, cy: 1090, r: 240, label: "Research & Open Data" },
+    tools:     { cx: 300, cy: 490, r: 210, label: "Lab Tools & Data" },
+    anthropic: { cx: 740, cy: 700, r: 150, label: "Anthropic & Claude", open: true },
   };
   const css = getComputedStyle(document.documentElement);
   const edgeColor = t => css.getPropertyValue(`--e-${t}`).trim();
@@ -40,7 +41,7 @@
       .force("x", d3.forceX(n => ZONES[n.zone].cx).strength(0.08))
       .force("y", d3.forceY(n => ZONES[n.zone].cy).strength(0.08))
       .force("charge", d3.forceManyBody().strength(-40))
-      .force("collide", d3.forceCollide(n => radius(n) + 24).iterations(2))
+      .force("collide", d3.forceCollide(n => Math.max(radius(n) + 22, n.name.length * (n.size === "large" ? 3.3 : 2.6))).strength(0.9).iterations(3))
       .stop();
     for (let i = 0; i < 400; i++) {
       sim.tick();
@@ -49,6 +50,9 @@
         if (d > max) { n.x = z.cx + dx / d * max; n.y = z.cy + dy / d * max; }
       });
     }
+    const ring = nodes.filter(n => n.zone === "anthropic" && n.id !== "anthropic"), za = ZONES.anthropic;
+    ring.forEach((n, i) => { const a = -Math.PI / 2 + i * 2 * Math.PI / ring.length; n.x = za.cx + Math.cos(a) * 118; n.y = za.cy + Math.sin(a) * 92; });
+    const hub = byId.get("anthropic"); if (hub) { hub.x = za.cx; hub.y = za.cy; }
     const edges = D.edges.map(e => ({ ...e, s: byId.get(e.source), t: byId.get(e.target) }));
     nodes.forEach(n => { n.degree = edges.filter(e => e.s === n || e.t === n).length; });
     layout = { nodes, edges, byId };
@@ -94,7 +98,7 @@
     Object.entries(ZONES).forEach(([id, z]) => {
       if (!z.open) root.append("circle").attr("class", "zone_circle").attr("cx", z.cx).attr("cy", z.cy).attr("r", z.r);
       const ly = z.open ? z.cy - z.r - 10 : z.cy + z.r + 34;
-      root.append("text").attr("class", `zone_label${z.open ? " anth" : ""}`).attr("x", z.cx).attr("y", id === "partners" ? z.cy - z.r - 14 : ly).text(z.label);
+      root.append("text").attr("class", `zone_label${z.open ? " anth" : ""}`).attr("x", z.cx).attr("y", ly).text(z.label);
     });
 
     // trim edge end so arrowheads sit at node edge
