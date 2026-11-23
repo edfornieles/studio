@@ -161,6 +161,7 @@ def process(ns, item, args, engine_args):
     if proc.wait() != 0:
         raise RuntimeError("Narration stopped with an error; see the generator log.")
     # Finished: the book is in the library; the inbox entry is no longer needed.
+    time.sleep(2)  # let the last progress write land before deleting the entry
     kv_delete(ns, PREFIX + item["id"] + ".pdf")
     kv_delete(ns, PREFIX + item["id"] + ".json")
     print(f"[{item['id']}] ready as {book_id}", flush=True)

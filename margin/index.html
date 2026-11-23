@@ -388,7 +388,9 @@ async function loadInbox() {
   let listed;
   try { listed = (await getJSON('/library/_inbox' + q)).items || []; } catch { return; }
   const recent = inboxItems.filter(i => !listed.some(l => l.id === i.id) && i.status === 'queued' && Date.now() - i.created < 120000);
-  inboxItems = [...recent, ...listed];
+  // Finished items are deleted by the processor; hide any whose book is already complete in case a delete lagged.
+  const complete = id => books.some(b => b.id === id && b.ready === b.sections);
+  inboxItems = [...recent, ...listed].filter(i => !(i.bookId && complete(i.bookId)));
   renderInbox();
   clearTimeout(inboxTimer);
   if (inboxItems.length) inboxTimer = setTimeout(async () => {
