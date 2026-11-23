@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Jabber · Lock-screen test</title>
+<meta name="theme-color" content="#f6f3ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jabber test">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="cover.png">
+<style>
+:root {
+  --bg: #f6f3ec; --ink: #1d1c1a; --soft: #6f6b63; --faint: #d9d4c8; --accent: #9a4a2e;
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #141413; --ink: #ece8df; --soft: #8f8a80; --faint: #34322e; --accent: #d98b6a; }
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); -webkit-text-size-adjust: 100%; }
+body { font: 16px/1.5 var(--sans); }
+main { max-width: 560px; margin: 0 auto; padding: calc(28px + env(safe-area-inset-top)) 24px calc(40px + env(safe-area-inset-bottom)); min-height: 100svh; display: flex; flex-direction: column; }
+.top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--soft); letter-spacing: .02em; }
+.top b { color: var(--ink); font-weight: 600; letter-spacing: -.01em; font-size: 15px; }
+
+.title { margin-top: 9vh; }
+.title h1 { font: 400 34px/1.1 var(--serif); margin: 0; letter-spacing: -.01em; }
+.title p { margin: 6px 0 0; color: var(--soft); font-size: 14px; }
+
+.now { margin: 6vh 0 0; font: 22px/1.5 var(--serif); min-height: 7.5em; color: var(--ink); transition: opacity .25s; }
+.now .prev { display: block; color: var(--soft); font-size: 16px; margin-bottom: 10px; opacity: .7; }
+
+.bar { margin-top: auto; padding-top: 28px; }
+.track { position: relative; height: 22px; cursor: pointer; touch-action: none; }
+.track::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 2px; background: var(--faint); border-radius: 2px; }
+.fill { position: absolute; left: 0; top: 10px; height: 2px; background: var(--ink); border-radius: 2px; width: 0; }
+.times { display: flex; justify-content: space-between; font: 12px/1 var(--sans); font-variant-numeric: tabular-nums; color: var(--soft); }
+
+.controls { display: flex; justify-content: center; align-items: center; gap: 36px; margin: 22px 0 6px; }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+.skip { font-size: 13px; color: var(--soft); width: 52px; height: 52px; border-radius: 50%; }
+.skip:active { background: var(--faint); }
+.play { width: 72px; height: 72px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.play svg { width: 26px; height: 26px; fill: currentColor; }
+.play:active { transform: scale(.96); }
+
+.sections { list-style: none; margin: 30px 0 0; padding: 0; border-top: 1px solid var(--faint); }
+.sections li button { width: 100%; display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--faint); font-size: 15px; text-align: left; }
+.sections li button span:last-child { color: var(--soft); font-variant-numeric: tabular-nums; font-size: 13px; }
+.sections li.on button { color: var(--accent); }
+
+details { margin-top: 28px; color: var(--soft); font-size: 13px; }
+summary { cursor: pointer; list-style: none; }
+summary::-webkit-details-marker { display: none; }
+summary::after { content: " ↓"; }
+details[open] summary::after { content: " ↑"; }
+.howto { line-height: 1.6; padding-left: 18px; }
+.verdict { color: var(--ink); font-size: 14px; margin: 12px 0; }
+pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; max-height: 300px; overflow: auto; background: color-mix(in srgb, var(--faint) 40%, transparent); padding: 12px; border-radius: 8px; color: var(--ink); }
+.row { display: flex; gap: 18px; margin-top: 8px; }
+.link { color: var(--accent); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="top"><b>Jabber</b><span>Lock-screen test</span></div>
+
+  <div class="title">
+    <h1 id="title">Loading…</h1>
+    <p id="meta"></p>
+  </div>
+
+  <p class="now" id="now" aria-live="off"></p>
+
+  <div class="bar">
+    <div class="track" id="track" role="slider" aria-label="Position" tabindex="0"><div class="fill" id="fill"></div></div>
+    <div class="times"><span id="cur">0:00</span><span id="section"></span><span id="dur">0:00</span></div>
+    <div class="controls">
+      <button class="skip" id="back" aria-label="Back 15 seconds">−15</button>
+      <button class="play" id="play" aria-label="Play">
+        <svg viewBox="0 0 24 24" id="icon"><path d="M7 4.5v15l13-7.5z"/></svg>
+      </button>
+      <button class="skip" id="fwd" aria-label="Forward 30 seconds">+30</button>
+    </div>
+  </div>
+
+  <ul class="sections" id="sections"></ul>
+
+  <details id="testPanel">
+    <summary>Test instructions and log</summary>
+    <ol class="howto">
+      <li>In Safari, tap Share › Add to Home Screen, then open it from the Home Screen. (Also worth trying once in plain Safari.)</li>
+      <li>Press play, lock the phone, put it in your pocket and walk for at least 15 minutes. The audio should run through all three sections.</li>
+      <li>Try the lock-screen controls: pause, play, skip. Also try headphones in and out, and a notification or call if one comes.</li>
+      <li>Unlock and come back here. The result appears below. Tap "Copy log" and send it to me.</li>
+    </ol>
+    <p class="verdict" id="verdict">No locked-screen listening recorded yet.</p>
+    <pre id="log"></pre>
+    <div class="row">
+      <button class="link" id="copy">Copy log</button>
+      <button class="link" id="clear">Clear log</button>
+    </div>
+  </details>
+</main>
+
+<audio id="audio" preload="auto" playsinline></audio>
+
+<script>
+// Lock-screen playback test. One <audio> element, one MP3 per section,
+// Media Session for lock-screen controls. No Web Audio.
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+const LOGKEY = 'jabber-lab-log', POSKEY = 'jabber-lab-pos';
+let book = null, idx = 0, sentences = [], wantPlaying = false, lastSave = 0;
+
+// ---------- persistent log ----------
+let entries = [];
+try { entries = JSON.parse(localStorage.getItem(LOGKEY) || '[]'); } catch { entries = []; }
+function log(msg) {
+  const d = new Date();
+  entries.push(`${d.toLocaleTimeString([], { hour12: false })} ${msg}`);
+  if (entries.length > 400) entries = entries.slice(-400);
+  try { localStorage.setItem(LOGKEY, JSON.stringify(entries)); } catch {}
+  $('log').textContent = entries.slice(-120).join('\n');
+}
+$('log').textContent = entries.slice(-120).join('\n');
+const fmt = s => { s = Math.max(0, Math.floor(s || 0)); return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`; };
+const at = () => `${book ? book.sections[idx].id : '-'}@${fmt(audio.currentTime)}`;
+
+// ---------- book ----------
+async function load() {
+  log(`--- page load · ${navigator.userAgent.match(/(iPhone|iPad|Mac|Android)[^;)]*/)?.[0] || 'browser'} · home screen: ${!!(navigator.standalone || matchMedia('(display-mode: standalone)').matches)}`);
+  try { if (navigator.audioSession) { navigator.audioSession.type = 'playback'; log('audioSession = playback'); } } catch (e) { log('audioSession failed ' + e.message); }
+  book = await (await fetch('audio/manifest.json', { cache: 'no-cache' })).json();
+  $('title').textContent = book.title;
+  const total = book.sections.reduce((n, s) => n + s.duration, 0);
+  $('meta').textContent = `${book.author} · ${book.sections.length} sections · ${Math.round(total / 60)} min · voice: ${book.voice}`;
+  const ul = $('sections');
+  book.sections.forEach((s, i) => {
+    const li = document.createElement('li');
+    const b = document.createElement('button');
+    b.innerHTML = `<span></span><span>${fmt(s.duration)}</span>`;
+    b.firstChild.textContent = s.title;
+    b.onclick = () => { select(i, 0); play(); };
+    li.append(b); ul.append(li);
+  });
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(POSKEY)); } catch {}
+  select(saved && saved.idx < book.sections.length ? saved.idx : 0, saved?.t || 0);
+}
+
+function select(i, t = 0) {
+  idx = i;
+  const s = book.sections[i];
+  sentences = s.sentences;
+  audio.src = 'audio/' + s.file;
+  audio.load();
+  if (t) { const seek = () => { audio.currentTime = t; audio.removeEventListener('loadedmetadata', seek); }; audio.addEventListener('loadedmetadata', seek); }
+  [...$('sections').children].forEach((li, k) => li.classList.toggle('on', k === i));
+  $('section').textContent = `${i + 1} / ${book.sections.length}`;
+  setMetadata();
+  // Warm the cache for the next section so the hand-over is instant.
+  const next = book.sections[i + 1];
+  if (next) fetch('audio/' + next.file).then(r => r.blob()).then(b => log(`prefetched ${next.id} (${Math.round(b.size / 1024)} KB)`)).catch(() => {});
+  render();
+}
+
+function setMetadata() {
+  if (!('mediaSession' in navigator) || !book) return;
+  const s = book.sections[idx];
+  navigator.mediaSession.metadata = new MediaMetadata({
+    title: `${book.title} · ${s.title}`, artist: book.author.replace(/\s*\(.*\)$/, ''), album: 'Jabber',
+    artwork: [{ src: new URL('cover.png', location.href).href, sizes: '512x512', type: 'image/png' }],
+  });
+}
+
+// ---------- playback ----------
+function play() {
+  wantPlaying = true;
+  const p = audio.play();
+  p?.catch(e => log(`play() rejected: ${e.name} ${e.message}`));
+}
+function pause() { wantPlaying = false; audio.pause(); }
+function seekBy(d) { audio.currentTime = Math.max(0, Math.min((audio.duration || 0) - 0.5, audio.currentTime + d)); }
+
+$('play').onclick = () => (audio.paused ? play() : pause());
+$('back').onclick = () => seekBy(-15);
+$('fwd').onclick = () => seekBy(30);
+const track = $('track');
+const seekTo = e => { const r = track.getBoundingClientRect(); if (audio.duration) audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration; };
+track.addEventListener('pointerdown', e => { track.setPointerCapture(e.pointerId); seekTo(e); });
+track.addEventListener('pointermove', e => { if (e.buttons) seekTo(e); });
+
+if ('mediaSession' in navigator) {
+  const h = (a, fn) => { try { navigator.mediaSession.setActionHandler(a, fn); } catch { log('no handler: ' + a); } };
+  h('play', () => { log('lock-screen: play'); play(); });
+  h('pause', () => { log('lock-screen: pause'); pause(); });
+  h('seekbackward', d => { log('lock-screen: back'); seekBy(-(d.seekOffset || 15)); });
+  h('seekforward', d => { log('lock-screen: forward'); seekBy(d.seekOffset || 30); });
+  h('seekto', d => { log('lock-screen: seek'); audio.currentTime = d.seekTime; });
+  h('previoustrack', () => { log('lock-screen: previous'); if (audio.currentTime > 5 || idx === 0) audio.currentTime = 0; else { select(idx - 1); play(); } });
+  h('nexttrack', () => { log('lock-screen: next'); if (idx < book.sections.length - 1) { select(idx + 1); play(); } });
+}
+
+// The critical moment: one file ends while the phone is locked and the next
+// must start from this handler with no user gesture.
+audio.addEventListener('ended', () => {
+  log(`ended ${book.sections[idx].id} (hidden: ${document.hidden})`);
+  if (idx < book.sections.length - 1) {
+    select(idx + 1);
+    play();
+    log(`hand-over → ${book.sections[idx].id}`);
+  } else {
+    wantPlaying = false;
+    log('finished all sections');
+    try { localStorage.removeItem(POSKEY); } catch {}
+  }
+});
+
+for (const ev of ['play', 'playing', 'pause', 'waiting', 'stalled', 'error']) {
+  audio.addEventListener(ev, () => {
+    if (ev === 'error') log(`ERROR ${audio.error?.code} ${audio.error?.message || ''} at ${at()}`);
+    else if (ev === 'pause' && audio.ended) return;
+    else log(`${ev} ${at()}${document.hidden ? ' [locked/hidden]' : ''}${ev === 'pause' && wantPlaying ? ' ← NOT requested (interruption?)' : ''}`);
+    render();
+  });
+}
+
+// ---------- did it keep playing while hidden? ----------
+let hiddenAt = null;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    hiddenAt = { wall: Date.now(), idx, t: audio.currentTime, playing: !audio.paused };
+    log(`hidden · playing: ${!audio.paused} · ${at()}`);
+  } else if (hiddenAt) {
+    const wall = (Date.now() - hiddenAt.wall) / 1000;
+    let heard = 0;
+    for (let i = hiddenAt.idx; i < idx; i++) heard += book.sections[i].duration;
+    heard += audio.currentTime - hiddenAt.t;
+    const msg = `back after ${fmt(wall)} · audio advanced ${fmt(heard)} · ${heard >= wall - 20 ? 'kept playing ✓' : hiddenAt.playing ? 'STOPPED while locked ✗' : 'was paused'}`;
+    log(msg);
+    if (hiddenAt.playing && wall > 30) $('verdict').textContent = 'Last time locked: ' + msg;
+    hiddenAt = null;
+  }
+});
+
+// ---------- UI ----------
+function render() {
+  const d = audio.duration || book?.sections[idx]?.duration || 0;
+  $('fill').style.width = d ? (audio.currentTime / d) * 100 + '%' : '0';
+  $('cur').textContent = fmt(audio.currentTime);
+  $('dur').textContent = fmt(d);
+  $('icon').innerHTML = audio.paused ? '<path d="M7 4.5v15l13-7.5z"/>' : '<path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/>';
+  $('play').setAttribute('aria-label', audio.paused ? 'Play' : 'Pause');
+  const t = audio.currentTime;
+  let k = sentences.findIndex(s => t < s.end + 0.3);
+  if (k < 0) k = sentences.length - 1;
+  const now = $('now');
+  if (now.dataset.k !== String(idx + ':' + k) && sentences[k]) {
+    now.dataset.k = idx + ':' + k;
+    now.replaceChildren();
+    if (sentences[k - 1]) { const p = document.createElement('span'); p.className = 'prev'; p.textContent = sentences[k - 1].text; now.append(p); }
+    now.append(sentences[k].text);
+  }
+}
+audio.addEventListener('timeupdate', () => {
+  render();
+  if ('mediaSession' in navigator && audio.duration && navigator.mediaSession.setPositionState) {
+    try { navigator.mediaSession.setPositionState({ duration: audio.duration, position: Math.min(audio.currentTime, audio.duration), playbackRate: audio.playbackRate }); } catch {}
+  }
+  if (Date.now() - lastSave > 5000) {
+    lastSave = Date.now();
+    try { localStorage.setItem(POSKEY, JSON.stringify({ idx, t: audio.currentTime })); } catch {}
+  }
+});
+audio.addEventListener('loadedmetadata', render);
+
+$('copy').onclick = async () => {
+  const text = entries.join('\n');
+  try { await navigator.clipboard.writeText(text); $('copy').textContent = 'Copied'; }
+  catch { const r = document.createRange(); r.selectNodeContents($('log')); getSelection().removeAllRanges(); getSelection().addRange(r); $('copy').textContent = 'Selected, copy now'; }
+  setTimeout(() => { $('copy').textContent = 'Copy log'; }, 2000);
+};
+$('clear').onclick = () => { entries = []; try { localStorage.removeItem(LOGKEY); } catch {} $('log').textContent = ''; $('verdict').textContent = 'Log cleared.'; };
+
+load().catch(e => { log('load failed: ' + e.message); $('title').textContent = 'Could not load audio'; $('meta').textContent = e.message; });
+</script>
+</body>
+</html>

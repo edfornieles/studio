@@ -59,6 +59,29 @@ python3 -m http.server 8000
 ```
 Open `http://localhost:8000/margin/` on a desktop. The app uses ES modules, so it must be served over HTTP; opening it as a `file://` path or in a Files preview won't work. For iPhone tests, deploy `margin/` to an HTTPS host and open it in Safari.
 
+## Milestone 1: lock-screen test (`lab/`)
+`lab/index.html` is a standalone page that answers one question: does pre-generated narration keep playing on an iPhone with the screen locked, including the hand-over from one section file to the next?
+
+- One `<audio>` element, one MP3 per section, Media Session lock-screen controls (play/pause, ±15/30 s, seek, previous/next). No Web Audio.
+- Three sections of Thoreau's *Walking* (1862, public domain), about 4–5 minutes each, generated with Kyutai Pocket TTS (voice `alba`). The manifest has per-sentence timings, so the current sentence is shown.
+- A persistent log records every play, pause, stall, error and hand-over, plus a verdict each time you return to the page ("back after 14:10 · audio advanced 14:05 · kept playing ✓"). Copy it from "Test instructions and log".
+
+### Regenerate or make new audio (`generator/`)
+```sh
+python3 -m venv .venv
+.venv/bin/pip install pocket-tts --extra-index-url https://download.pytorch.org/whl/cpu   # Linux; plain pip on macOS
+.venv/bin/python generator/generate.py book.json --out lab/audio --voice alba
+```
+`book.json` is `{"title", "author", "sections": [{"title", "text"}]}`. Needs `ffmpeg`. Pocket TTS runs on an ordinary CPU at about twice real-time speed (this container) and is free. Voices are listed in the [Pocket TTS README](https://github.com/kyutai-labs/pocket-tts); `--voice` also accepts a `.wav` sample you're authorised to clone.
+
+## Deploy: jabber.edfornieles.com (Cloudflare Pages)
+1. Cloudflare dashboard › Workers & Pages › Create › Pages › Connect to Git › `edfornieles/studio`.
+2. Production branch: `claude/margin-prototype-as2x2q` for now. Framework preset: None. Build command: *(empty)*. Build output directory: `margin`.
+3. After the first deploy: Custom domains › add `jabber.edfornieles.com`. The DNS record is created automatically because the domain is already on Cloudflare. This doesn't touch the main site.
+4. Test page: `https://jabber.edfornieles.com/lab/`
+
+`_headers` sets the MP3 content type and caching.
+
 ## Tests
 From `margin/`:
 ```sh

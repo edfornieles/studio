@@ -1,0 +1,9 @@
+# Cloudflare Pages headers
+/lab/audio/*.mp3
+  Content-Type: audio/mpeg
+  Cache-Control: public, max-age=86400
+/lab/audio/manifest.json
+  Cache-Control: no-cache
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: same-origin
