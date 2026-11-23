@@ -11,7 +11,7 @@ Run several workers in parallel (each uses ~2 CPU cores). The manifest
 (library/<id>/manifest.json) lists every section; ones not yet generated
 have "file": null.
 """
-import argparse, json, re, sys, time, urllib.request
+import argparse, json, os, re, sys, time, urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -184,7 +184,15 @@ def main():
         if s.get("pages") and any(s["pages"][0] <= p <= s["pages"][1] for p in pp): return (2, i)
         return (3, i)
     order = sorted(range(len(sections)), key=rank)
-    mine = [i for k, i in enumerate(order) if k % args.workers == args.worker]
+    # Workers share one queue: each claims the next unfinished section in
+    # reading order with an exclusive lock file, so the book fills in front to back.
+    def claim(i):
+        try:
+            os.close(os.open(work / f"section-{i + 1:02d}.lock", os.O_CREAT | os.O_EXCL | os.O_WRONLY))
+            return True
+        except FileExistsError:
+            return False
+    mine = order
 
     figures = json.loads(Path(args.figures).read_text()) if args.figures else {}
     engine = make_engine(args)
@@ -196,6 +204,8 @@ def main():
             done = json.loads(side.read_text())
             if not figs or "figures" in done:
                 continue  # finished; regenerate only to add newly described figures
+        if args.workers > 1 and not claim(i):
+            continue  # another worker has it
         t0 = time.time()
         pcm, rate, timings = generate.render(engine, text)
         mp3 = work / f"section-{n:02d}.mp3"
