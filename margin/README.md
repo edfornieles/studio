@@ -38,3 +38,11 @@ From the repository root:
 python3 -m http.server 8000
 ```
 Open `http://localhost:8000/margin/` on a desktop. For iPhone tests, deploy to an HTTPS host.
+
+
+## Required original PDF for local development
+The full book **Source: Music of the Avant-Garde, 1966–1973** (prepared as `Mother_Source_Reading_Copy.pdf`, 401 pages, about 17.8 MB) is **not in this repository**. This is intentional: the repository is public and the book is copyrighted.
+
+To test with the user's actual book, have the user place the downloaded PDF in `margin/private/Mother_Source_Reading_Copy.pdf` in their local Claude Code checkout. The private directory is gitignored. Claude Code can then open and process that local file, but GitHub-hosted sessions will not automatically receive it; arrange a private authorised file transfer if using cloud environments.
+
+The user can retrieve the original from their ChatGPT conversation (Margin project, 23 November 2026). Do not treat the preceding filename as evidence that the file already exists; check the local file and its integrity before using it. Do not upload or distribute the book to the public deployment. The web app should accept the PDF through a private user-side import instead.
