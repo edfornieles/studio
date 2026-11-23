@@ -128,6 +128,7 @@ def main():
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--manifest-only", action="store_true")
     ap.add_argument("--cover", help="JPEG cover image to upload (e.g. the PDF's first page)")
+    ap.add_argument("--pdf", help="original PDF to upload (private), viewable from the player")
     args = ap.parse_args()
 
     book = json.loads(Path(args.book).read_text())
@@ -141,10 +142,15 @@ def main():
 
     if args.cover:
         kv_put(ns, prefix + "cover.jpg", Path(args.cover).read_bytes(), "image/jpeg")
+    if args.pdf:
+        kv_put(ns, prefix + "book.pdf", Path(args.pdf).read_bytes(), "application/pdf")
+
+    has_pdf = bool(args.pdf) or kv_get(ns, prefix + "book.pdf") is not None
 
     def publish_manifest():
         m = build_manifest(book, sections, work, args.voice if args.engine == "pocket" else args.fish_voice)
         m["cover"] = "cover.jpg" if args.cover or kv_get(ns, prefix + "cover.jpg") is not None else None
+        m["pdf"] = "book.pdf" if args.pdf or has_pdf else None
         kv_put(ns, prefix + "manifest.json", json.dumps(m, ensure_ascii=False).encode(), "application/json")
         # Library index: one entry per book, shown on the home screen.
         index = json.loads(kv_get(ns, "library/index.json") or b'{"books": []}')

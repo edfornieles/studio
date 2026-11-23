@@ -83,6 +83,7 @@ svg:not([fill]) { fill: currentColor; }
 .ptop { display: flex; align-items: center; justify-content: space-between; height: 48px; }
 .ptop .ic { width: 44px; height: 44px; display: grid; place-items: center; color: var(--soft); }
 .ptop .ic svg { width: 24px; height: 24px; }
+.ptop .pdf { min-width: 44px; height: 30px; padding: 0 10px; display: grid; place-items: center; border: 1px solid var(--faint); border-radius: 15px; font-size: 12px; font-weight: 650; letter-spacing: .04em; color: var(--ink); text-decoration: none; }
 .ptop .where { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
 .art { width: min(68vw, 300px, 31svh); margin: 6px auto 0; box-shadow: var(--shadow); border-radius: 10px; }
 .ptitle { text-align: center; margin-top: 16px; }
@@ -163,7 +164,7 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
     <div class="ptop">
       <button class="ic" id="close" aria-label="Close player"></button>
       <span class="where" id="where"></span>
-      <button class="ic" id="chapBtnTop" aria-label="Chapters"></button>
+      <a class="pdf" id="pdfBtn" target="_blank" rel="noopener" style="visibility:hidden">PDF</a>
     </div>
     <div class="cover art" id="art"></div>
     <div class="ptitle">
@@ -226,7 +227,7 @@ const I = {
 };
 const fwdIcon = n => I.fwd.replace('</svg>', '') + `</svg><b>${n}</b>`;
 const backIcon = n => I.back.replace('</svg>', '') + `</svg><b>${n}</b>`;
-$('close').innerHTML = I.down; $('chapBtnTop').innerHTML = I.list;
+$('close').innerHTML = I.down;
 $('prev').innerHTML = I.prev; $('next').innerHTML = I.next;
 $('back').innerHTML = backIcon(30); $('fwd').innerHTML = fwdIcon(30);
 $('miniFwd').innerHTML = fwdIcon(30);
@@ -500,6 +501,13 @@ function render() {
   $('fill').style.width = $('knob').style.left = (frac * 100) + '%';
   $('miniProg').style.width = (frac * 100) + '%';
   $('cur').textContent = fmt(t);
+  const sec = m.sections[idx];
+  if (m.pdf && sec.pages) {
+    const page = Math.min(sec.pages[1], sec.pages[0] + Math.floor(frac * (sec.pages[1] - sec.pages[0] + 1)));
+    $('pdfBtn').style.visibility = 'visible';
+    $('pdfBtn').href = lib(book.id) + m.pdf + q + '#page=' + page;
+    $('pdfBtn').title = 'Open the PDF at page ' + page;
+  } else $('pdfBtn').style.visibility = 'hidden';
   $('rem').textContent = '-' + fmt(d - t);
   if (!describing) {
     const pr = bookProgress(m, { idx, t });
@@ -567,7 +575,6 @@ function chaptersSheet() {
   });
 }
 $('chapBtn').onclick = chaptersSheet;
-$('chapBtnTop').onclick = chaptersSheet;
 
 $('speedBtn').onclick = () => openSheet(el => {
   el.innerHTML = '<h2>Narration speed</h2>';
