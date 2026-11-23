@@ -70,7 +70,8 @@ def main():
 
     if "--set-key" in sys.argv:  # new private-library access key; prints it once
         import secrets
-        key = secrets.token_urlsafe(18)
+        # letters and digits only: "_" and "--" get mangled when a link is pasted into chat apps
+        key = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789") for _ in range(24))
         must(call("PUT", f"{API}/workers/scripts/{NAME}/secrets", json.dumps({"name": "ACCESS_KEY", "text": key, "type": "secret_text"}).encode()), "set key")
         print("ACCESS_KEY", key)
 
