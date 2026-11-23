@@ -110,6 +110,7 @@ svg:not([fill]) { fill: currentColor; }
 .ptitle .book { font-size: 14px; color: var(--soft); margin-top: 4px; }
 .flag { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--accent); font-weight: 600; }
 .line { margin: 12px auto 0; max-width: 34em; min-height: 4.6em; text-align: center; font: 16px/1.5 var(--serif); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--soft); }
+.notice { margin: 12px auto 0; max-width: 30em; text-align: center; font-size: 14px; color: var(--accent); font-weight: 600; }
 .describe { display: block; margin: 10px auto 0; padding: 8px 16px; border: 1px solid var(--accent); color: var(--accent); border-radius: 20px; font-size: 14px; font-weight: 600; }
 .panel-text { margin: 14px 0 0; padding: 14px 16px; background: var(--surface); border-radius: 12px; font: 15px/1.55 var(--serif); white-space: pre-wrap; }
 .panel-text small { display: block; font: 600 11px/1.3 var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
@@ -195,6 +196,7 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
       <div class="book" id="bookName"></div>
       <span class="flag" id="flag" hidden>◆ Mother suggestion · tap for note</span>
     </div>
+    <p class="notice" id="notice" role="status" hidden></p>
     <p class="line" id="line"></p>
     <button class="describe" id="describe" hidden>Describe this image</button>
     <div class="panel-text" id="panel" hidden></div>
@@ -624,7 +626,11 @@ function play() {
   if (!m) return;
   try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
   wantPlaying = true;
-  audio.play()?.catch(e => log(`play() rejected: ${e.name} ${e.message}`));
+  setNotice('');
+  audio.play()?.catch(e => {
+    log(`play() rejected: ${e.name} ${e.message}`);
+    setNotice(e.name === 'NotAllowedError' ? 'The phone blocked playback. Tap play again.' : `Couldn’t start playback (${e.name}). Open Playback log on the Library screen and send it to me.`);
+  });
 }
 function pause() { wantPlaying = false; audio.pause(); }
 function seekBy(d) { audio.currentTime = Math.max(0, Math.min((audio.duration || 0) - 0.3, audio.currentTime + d)); }
@@ -646,6 +652,12 @@ audio.addEventListener('ended', () => {
   else { wantPlaying = false; log('finished the book'); }
 });
 audio.addEventListener('pause', () => { if (book && !describing) { trackPlayback(); endSession(); syncProgress(book.id); } });
+// Show what the audio is doing, so silence is never a mystery.
+let noticeTimer = 0;
+function setNotice(t) { const el = $('notice'); el.textContent = t; el.hidden = !t; $('miniChap').textContent = t || m?.sections[idx]?.title || ''; }
+audio.addEventListener('waiting', () => { clearTimeout(noticeTimer); noticeTimer = setTimeout(() => { if (!audio.paused && audio.readyState < 3) setNotice('Loading audio…'); }, 1200); log(`waiting ${m?.sections[idx]?.id}@${fmt(audio.currentTime)}`); });
+audio.addEventListener('playing', () => { clearTimeout(noticeTimer); setNotice(''); });
+audio.addEventListener('error', () => setNotice(`This chapter’s audio failed to load (error ${audio.error?.code}). Check your connection, then tap play.`));
 for (const ev of ['playing', 'pause', 'stalled', 'error']) {
   audio.addEventListener(ev, () => {
     if (ev === 'error') log(`ERROR ${audio.error?.code} at ${m?.sections[idx]?.id}`);
