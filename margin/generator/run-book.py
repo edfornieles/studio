@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "deploy"))
 import generate  # noqa: E402
+from tts_engines import add_engine_args, make_engine  # noqa: E402
 from deploy import call, must, namespace, API  # noqa: E402
 
 
@@ -37,6 +38,27 @@ def notes_section(notes):
             "text": "Mackenzie's suggestions for Mother. Six readings from this book, with notes.\n\n" + "\n\n".join(parts)}
 
 
+CUE = "There's an image here: {short}."
+CUE_TAIL = "Tap Describe if you'd like to hear more about it."
+
+
+def section_text(sec, figures):
+    """Section text with a spoken cue where each described figure's page starts.
+    Returns (text, [figure dicts in the order their cues appear])."""
+    if not figures or not sec.get("parts"):
+        return sec["text"], []
+    chunks, order = [sec.get("intro", sec["title"] + ".")], []
+    for part in sec["parts"]:
+        for k, f in enumerate(figures.get(str(part["page"])) or []):
+            short = f["short"].strip().rstrip(".")
+            short = short[0].lower() + short[1:] if short[:1].isupper() and not short[1:2].isupper() else short  # keep "LP", "ONCE"
+            chunks.append(CUE.format(short=short) + " " + CUE_TAIL)
+            order.append({**f, "page": part["page"], "n": k})
+        if part["text"]:
+            chunks.append(part["text"])
+    return "\n\n".join(chunks), order
+
+
 def build_manifest(book, sections, work, voice):
     out = {"title": book["title"], "author": book.get("author", ""), "voice": voice, "sections": [], "notes": book.get("notes", [])}
     for i, sec in enumerate(sections, 1):
@@ -53,7 +75,8 @@ def main():
     ap.add_argument("book")
     ap.add_argument("--id", required=True, help="book id used in URLs, e.g. source")
     ap.add_argument("--work", required=True, help="local folder for finished sections")
-    ap.add_argument("--voice", default="alba")
+    ap.add_argument("--figures", help="figures.json from describe-images.py: adds spoken image cues")
+    add_engine_args(ap)
     ap.add_argument("--first", default="", help="comma-separated title prefixes to generate first")
     ap.add_argument("--priority-pages", default="", help="pages whose sections come next (e.g. annotated pages)")
     ap.add_argument("--worker", type=int, default=0)
@@ -71,7 +94,7 @@ def main():
     prefix = f"library/{args.id}/"
 
     def publish_manifest():
-        kv_put(ns, prefix + "manifest.json", json.dumps(build_manifest(book, sections, work, args.voice), ensure_ascii=False).encode(), "application/json")
+        kv_put(ns, prefix + "manifest.json", json.dumps(build_manifest(book, sections, work, args.voice if args.engine == "pocket" else args.fish_voice), ensure_ascii=False).encode(), "application/json")
 
     if args.manifest_only:
         publish_manifest(); return
@@ -88,20 +111,36 @@ def main():
     order = sorted(range(len(sections)), key=rank)
     mine = [i for k, i in enumerate(order) if k % args.workers == args.worker]
 
-    model, voice = generate.load(args.voice)
+    figures = json.loads(Path(args.figures).read_text()) if args.figures else {}
+    engine = make_engine(args)
     for i in mine:
         n = i + 1
         side = work / f"section-{n:02d}.json"
+        text, figs = section_text(sections[i], figures)
         if side.exists():
-            continue
+            done = json.loads(side.read_text())
+            if not figs or "figures" in done:
+                continue  # finished; regenerate only to add newly described figures
         t0 = time.time()
-        pcm, timings = generate.render(model, voice, sections[i]["text"])
+        pcm, rate, timings = generate.render(engine, text)
         mp3 = work / f"section-{n:02d}.mp3"
-        generate.encode_mp3(pcm, model.sample_rate, mp3, "64k")
+        generate.encode_mp3(pcm, rate, mp3, "64k")
         kv_put(ns, prefix + mp3.name, mp3.read_bytes(), "audio/mpeg")
-        side.write_text(json.dumps({"file": mp3.name, "duration": round(len(pcm) / model.sample_rate, 2), "sentences": timings}, ensure_ascii=False))
+        meta = {"file": mp3.name, "duration": round(len(pcm) / rate, 2), "voice": engine.label, "sentences": timings}
+        if figs:
+            cue_idx = [k for k, t in enumerate(timings) if t["text"].startswith("There's an image here:")]
+            meta["figures"] = []
+            for f, k in zip(figs, cue_idx):
+                dpcm, drate, _ = generate.render(engine, f["description"])
+                dname = f"figure-p{f['page']}-{f['n']}.mp3"
+                generate.encode_mp3(dpcm, drate, work / dname, "64k")
+                kv_put(ns, prefix + dname, (work / dname).read_bytes(), "audio/mpeg")
+                meta["figures"].append({"page": f["page"], "kind": f["kind"], "short": f["short"], "description": f["description"],
+                                        "sentence": k, "at": timings[k]["start"], "file": dname, "duration": round(len(dpcm) / drate, 2)})
+        side.write_text(json.dumps(meta, ensure_ascii=False))
         publish_manifest()
-        print(f"DONE s{n:02d} {len(pcm) / model.sample_rate / 60:.1f} min audio in {(time.time() - t0) / 60:.1f} min · {sections[i]['title'][:60]}", flush=True)
+        print(f"DONE s{n:02d} {len(pcm) / rate / 60:.1f} min audio in {(time.time() - t0) / 60:.1f} min · {sections[i]['title'][:60]}"
+              + (f" · {len(figs)} image(s)" if figs else ""), flush=True)
     publish_manifest()
     print(f"WORKER {args.worker} FINISHED", flush=True)
 

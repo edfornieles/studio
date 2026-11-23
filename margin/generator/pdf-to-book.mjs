@@ -86,10 +86,14 @@ for (let i = firstIdx; i < starts.length; i++) {
   const s = starts[i];
   if (skip.some(k => s.title.toLowerCase().startsWith(k))) continue;
   const end = (starts[i + 1]?.page || doc.numPages + 1) - 1;
-  const body = clean(pages.slice(s.page - 1, end).filter(t => t.trim()).join('\n\n'));
+  // Keep the cleaned text page by page, so cues (e.g. image descriptions) can be
+  // inserted where a page starts.
+  const parts = [];
+  for (let p = s.page; p <= end; p++) parts.push({ page: p, text: clean(pages[p - 1] || '') });
+  const body = parts.map(x => x.text).filter(Boolean).join('\n\n');
   if (body.length < 400 && i < starts.length - 1) { carry += s.title + '.\n\n'; continue; } // e.g. issue title pages
   const title = s.title.replace(/\s+/g, ' ');
-  sections.push({ title, pages: [s.page, end], text: carry + title + '.\n\n' + body });
+  sections.push({ title, pages: [s.page, end], intro: carry + title + '.', parts, text: carry + title + '.\n\n' + body });
   carry = '';
 }
 

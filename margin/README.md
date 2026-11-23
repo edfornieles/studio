@@ -96,6 +96,27 @@ python margin/generator/run-book.py book.json --id <id> --work <folder> --worker
 ```
 `pdf-to-book.mjs` uses the PDF's bookmarks as sections and keeps sticky-note annotations as notes. `run-book.py` narrates a notes section first, then the `--first` sections, then sections containing `--priority-pages`, then the rest. It uploads each section as it finishes, so you can listen while the rest generates, and finished sections are skipped on a re-run.
 
+### Voices: Pocket TTS now, Fish Drama 3 on the laptop
+All generator scripts take the same engine options (`generator/tts_engines.py`):
+```sh
+# default: Pocket TTS on any CPU, free
+python generator/run-book.py book.json --id source --work out/ --voice alba
+# Fish (e.g. Drama 3) via fish-speech's local API server on your laptop
+python generator/run-book.py book.json --id source --work out/ --engine fish --fish-url http://127.0.0.1:8080/v1/tts --fish-voice <reference_id>
+# Fish Audio's hosted API (paid): FISH_API_KEY in the environment
+python generator/run-book.py book.json --id source --work out/ --engine fish --fish-url https://api.fish.audio/v1/tts --fish-model <model id> --fish-voice <voice id>
+# check an engine before a long run
+python generator/generate.py --engine fish --fish-url ... --probe "A short test sentence."
+```
+Use one engine per book so the voice doesn't change between sections. Each section records the engine and voice it was made with. To redo a book in a new voice, use a fresh `--work` folder.
+
+### Image descriptions
+```sh
+python generator/describe-images.py book.pdf book.json figures.json      # needs ANTHROPIC_API_KEY; cached
+python generator/run-book.py book.json ... --figures figures.json        # adds spoken cues + description clips
+```
+Pages with sizeable pictures or very little text are rendered and described by Claude: a one-line cue that the narrator reads in place ("There's an image here: … Tap Describe if you'd like to hear more about it.") and a fuller description, generated as its own clip. In the player, **Describe this image** appears for 90 s after each cue, plays the description, then returns to the same point. Sections generated before figures existed are regenerated automatically on the next `--figures` run.
+
 ## Tests
 From `margin/`:
 ```sh

@@ -18,6 +18,7 @@ Setup (Linux, CPU-only PyTorch):
     # also needs ffmpeg on PATH
 Run:
     .venv/bin/python generate.py book.json --out ../lab/audio --voice alba
+    .venv/bin/python generate.py --engine fish --probe "Hello."   # test another engine
 """
 import argparse
 import json
@@ -28,6 +29,8 @@ import time
 from pathlib import Path
 
 import numpy as np
+
+from tts_engines import add_engine_args, make_engine
 
 ABBR = re.compile(r"^(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|vs|etc|e\.g|i\.e|cf|al|ed|eds|vol|no|pp?|ch|fig|op|cit|ibid|ca|c)\.$", re.I)
 BOUNDARY = re.compile(r"[.!?…]+[\"'”’)\]]*(?=\s+[\"'“‘(\[]?[A-Z0-9])")
@@ -76,51 +79,58 @@ def encode_mp3(pcm, rate, path, bitrate):
     )
 
 
-def load(voice_name):
-    from pocket_tts import TTSModel  # imported late so --help works without it
-    model = TTSModel.load_model()
-    return model, model.get_state_for_audio_prompt(voice_name)
-
-
-def render(model, voice, text, pause=0.35, para_pause=0.8):
-    """Generate one section: returns (pcm float32, sentence timings)."""
-    rate = model.sample_rate
-    pieces, timings, at = [], [], 0.0
+def render(engine, text, pause=0.35, para_pause=0.8):
+    """Generate one section with any engine (see tts_engines.py).
+    Returns (pcm float32, sample rate, sentence timings)."""
+    pieces, timings, at, rate = [], [], 0.0, None
     for s in sentences(text):
-        audio = model.generate_audio(voice, s.strip()).numpy().astype(np.float32)
+        audio, r = engine.synth(s.strip())
+        if rate is None:
+            rate = r
+        elif r != rate:  # engines should be consistent; resample crudely if not
+            audio = np.interp(np.linspace(0, len(audio), int(len(audio) * rate / r), endpoint=False), np.arange(len(audio)), audio).astype(np.float32)
         dur = len(audio) / rate
         timings.append({"text": s.strip(), "start": round(at, 3), "end": round(at + dur, 3)})
         gap = para_pause if s.endswith("\n") else pause
         pieces += [audio, np.zeros(int(gap * rate), dtype=np.float32)]
         at += dur + gap
-    return (np.concatenate(pieces) if pieces else np.zeros(1, dtype=np.float32)), timings
+    if not pieces:
+        return np.zeros(1, dtype=np.float32), 24000, []
+    return np.concatenate(pieces), rate, timings
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("book", help="JSON with title and sections")
-    ap.add_argument("--out", required=True)
-    ap.add_argument("--voice", default="alba", help="Pocket TTS voice name or path to a .wav/.safetensors voice")
+    ap.add_argument("book", nargs="?", help="JSON with title and sections")
+    ap.add_argument("--out")
     ap.add_argument("--bitrate", default="64k")
+    ap.add_argument("--probe", metavar="TEXT", help="just synthesise TEXT to probe.mp3 to test an engine")
+    add_engine_args(ap)
     args = ap.parse_args()
+
+    t0 = time.time()
+    engine = make_engine(args)
+    print(f"{engine.label} ready in {time.time() - t0:.1f}s", file=sys.stderr)
+
+    if args.probe:
+        pcm, rate, _ = render(engine, args.probe)
+        encode_mp3(pcm, rate, Path("probe.mp3"), args.bitrate)
+        print(f"probe.mp3: {len(pcm) / rate:.1f}s of audio in {time.time() - t0:.1f}s", file=sys.stderr)
+        return
 
     book = json.loads(Path(args.book).read_text())
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    t0 = time.time()
-    model, voice = load(args.voice)
-    print(f"model + voice loaded in {time.time() - t0:.1f}s", file=sys.stderr)
-
-    manifest = {"title": book["title"], "author": book.get("author", ""), "voice": Path(args.voice).stem,
+    manifest = {"title": book["title"], "author": book.get("author", ""), "voice": engine.label,
                 "generated": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "sections": []}
     for i, sec in enumerate(book["sections"], 1):
         t1 = time.time()
-        pcm, timings = render(model, voice, sec["text"])
+        pcm, rate, timings = render(engine, sec["text"])
         name = f"section-{i:02d}.mp3"
-        encode_mp3(pcm, model.sample_rate, out / name, args.bitrate)
+        encode_mp3(pcm, rate, out / name, args.bitrate)
         manifest["sections"].append({"id": f"s{i:02d}", "title": sec["title"], "file": name,
-                                     "duration": round(len(pcm) / model.sample_rate, 2), "sentences": timings})
-        print(f"section {i}: {len(timings)} sentences, {len(pcm) / model.sample_rate / 60:.1f} min audio "
+                                     "duration": round(len(pcm) / rate, 2), "sentences": timings})
+        print(f"section {i}: {len(timings)} sentences, {len(pcm) / rate / 60:.1f} min audio "
               f"in {(time.time() - t1) / 60:.1f} min", file=sys.stderr)
         (out / "manifest.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False))
 

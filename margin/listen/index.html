@@ -71,6 +71,10 @@ summary::-webkit-details-marker { display: none; }
 pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; max-height: 260px; overflow: auto; background: color-mix(in srgb, var(--faint) 40%, transparent); padding: 12px; border-radius: 8px; color: var(--ink); }
 .link { color: var(--accent); font-size: 13px; margin-right: 16px; }
 .msg { margin-top: 30vh; font: 20px/1.5 var(--serif); }
+.describe { display: block; margin: 18px auto 0; padding: 10px 18px; border: 1px solid var(--accent); color: var(--accent); border-radius: 22px; font-size: 14px; }
+.describe:active { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+.figure { margin-top: 14px; font: 16px/1.6 var(--serif); }
+.figure small { display: block; font: 12px/1.4 var(--sans); letter-spacing: .06em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
 </style>
 </head>
 <body>
@@ -85,6 +89,8 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
     </div>
     <p class="now" id="now"></p>
     <div class="note" id="note" hidden></div>
+    <div class="figure" id="figure" hidden></div>
+    <button class="describe" id="describe" hidden>Describe this image</button>
     <div class="bar">
       <div class="track" id="track" role="slider" aria-label="Position in section" tabindex="0"><div class="fill" id="fill"></div></div>
       <div class="times"><span id="cur">0:00</span><span id="secpos"></span><span id="dur">0:00</span></div>
@@ -123,6 +129,7 @@ const q = KEY ? `?key=${encodeURIComponent(KEY)}` : '';
 const POSKEY = `jabber-pos-${BOOK}`, LOGKEY = 'jabber-log', RATEKEY = 'jabber-rate';
 const RATES = [1, 1.15, 1.3, 1.5, 0.9];
 let m = null, idx = 0, sentences = [], wantPlaying = false, lastSave = 0, waitingForNext = false;
+let describing = null; // {fig, returnTo: {idx, t}} while an image description plays
 
 // ---------- log ----------
 let entries = [];
@@ -198,7 +205,7 @@ function renderList() {
     if (notesFor(s).length || s.kind === 'notes') { const mk = document.createElement('span'); mk.className = 'mark'; mk.textContent = s.kind === 'notes' ? '◆ Notes' : '◆ Mother suggestion'; t.append(mk); }
     const d = document.createElement('span'); d.className = 'd'; d.textContent = ready(i) ? fmt(s.duration) : 'preparing';
     b.append(t, d);
-    b.onclick = () => { if (ready(i)) { select(i, 0); play(); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+    b.onclick = () => { if (ready(i)) { describing = null; $('figure').hidden = true; select(i, 0); play(); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
     li.append(b); ul.append(li);
     if (ready(i)) { doneSecs++; total += s.duration; }
   });
@@ -266,6 +273,7 @@ if ('mediaSession' in navigator) {
 
 // Section hand-over: starts the next file from the ended handler (no tap needed).
 audio.addEventListener('ended', () => {
+  if (describing) { endDescription(); return; }
   const n = nextReady(idx);
   log(`ended ${m.sections[idx].id} (locked: ${document.hidden})`);
   if (n >= 0) { select(n); play(); log('hand-over → ' + m.sections[n].id); }
@@ -286,6 +294,42 @@ document.addEventListener('visibilitychange', () => {
   else if (hiddenAt) { log(`back after ${fmt((Date.now() - hiddenAt.wall) / 1000)} · ${audio.paused ? 'paused' : 'still playing'}`); hiddenAt = null; refresh(); }
 });
 
+// ---------- image descriptions ----------
+// The narration says "There's an image here: ... Tap Describe ..." at each
+// figure. For 90 s after that cue the Describe button plays the fuller
+// description, then returns to the same point in the reading.
+function currentFigure() {
+  const figs = m?.sections[idx]?.figures || [];
+  const t = audio.currentTime;
+  let found = null;
+  for (const f of figs) if (t >= f.at - 0.5 && t <= f.at + 90) found = f;
+  return found;
+}
+function describeFigure(f) {
+  describing = { fig: f, returnTo: { idx, t: audio.currentTime } };
+  log(`describe image p${f.page}`);
+  audio.src = base + f.file + q;
+  audio.playbackRate = Number(localStorage.getItem(RATEKEY)) || 1;
+  $('figure').hidden = false;
+  $('figure').innerHTML = '';
+  const label = document.createElement('small'); label.textContent = `Image · page ${f.page} · ${f.kind}`;
+  $('figure').append(label, f.description);
+  $('describe').textContent = 'Back to the reading';
+  play();
+}
+function endDescription() {
+  const r = describing.returnTo;
+  describing = null;
+  $('figure').hidden = true;
+  select(r.idx, r.t);
+  play();
+}
+$('describe').onclick = () => {
+  if (describing) { endDescription(); return; }
+  const f = currentFigure();
+  if (f) describeFigure(f);
+};
+
 // ---------- UI ----------
 function render() {
   const d = audio.duration || m?.sections[idx]?.duration || 0;
@@ -294,6 +338,10 @@ function render() {
   $('dur').textContent = fmt(d);
   $('icon').innerHTML = audio.paused ? '<path d="M7 4.5v15l13-7.5z"/>' : '<path d="M6 4.5h4v15H6zM14 4.5h4v15h-4z"/>';
   $('play').setAttribute('aria-label', audio.paused ? 'Play' : 'Pause');
+  const fig = describing ? describing.fig : currentFigure();
+  $('describe').hidden = !fig;
+  if (!describing) $('describe').textContent = 'Describe this image';
+  if (describing) return;
   const t = audio.currentTime;
   let k = sentences.findIndex(s => t < s.end + 0.3);
   if (k < 0) k = sentences.length - 1;
@@ -310,7 +358,7 @@ audio.addEventListener('timeupdate', () => {
   if ('mediaSession' in navigator && audio.duration && navigator.mediaSession.setPositionState) {
     try { navigator.mediaSession.setPositionState({ duration: audio.duration, position: Math.min(audio.currentTime, audio.duration), playbackRate: audio.playbackRate }); } catch {}
   }
-  if (Date.now() - lastSave > 5000) { lastSave = Date.now(); try { localStorage.setItem(POSKEY, JSON.stringify({ idx, t: audio.currentTime })); } catch {} }
+  if (!describing && Date.now() - lastSave > 5000) { lastSave = Date.now(); try { localStorage.setItem(POSKEY, JSON.stringify({ idx, t: audio.currentTime })); } catch {} }
 });
 audio.addEventListener('loadedmetadata', render);
 
