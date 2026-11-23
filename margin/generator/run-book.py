@@ -25,6 +25,17 @@ def kv_put(ns, key, data, ctype="application/octet-stream"):
     must(call("PUT", f"{API}/storage/kv/namespaces/{ns}/values/{urllib.request.quote(key, safe='')}", data, ctype), f"upload {key}")
 
 
+KV_LIMIT = 24 * 1024 * 1024  # Workers KV values max out at 25 MiB
+
+
+def encode_fitting(pcm, rate, path):
+    """MP3 at 48 kbit/s (plenty for mono speech); long chapters get a lower
+    bitrate so the file stays under the storage limit."""
+    seconds = len(pcm) / rate
+    kbps = min(48, int(KV_LIMIT * 8 / seconds / 1000 * 0.97))
+    generate.encode_mp3(pcm, rate, path, f"{max(24, kbps)}k")
+
+
 def kv_get(ns, key):
     """Raw bytes of a KV value, or None if missing."""
     req = urllib.request.Request(f"{API}/storage/kv/namespaces/{ns}/values/{urllib.request.quote(key, safe='')}")
@@ -188,7 +199,7 @@ def main():
         t0 = time.time()
         pcm, rate, timings = generate.render(engine, text)
         mp3 = work / f"section-{n:02d}.mp3"
-        generate.encode_mp3(pcm, rate, mp3, "64k")
+        encode_fitting(pcm, rate, mp3)
         kv_put(ns, prefix + mp3.name, mp3.read_bytes(), "audio/mpeg")
         meta = {"file": mp3.name, "duration": round(len(pcm) / rate, 2), "voice": engine.label, "sentences": timings}
         if figs:
@@ -197,7 +208,7 @@ def main():
             for f, k in zip(figs, cue_idx):
                 dpcm, drate, _ = generate.render(engine, f["description"])
                 dname = f"figure-p{f['page']}-{f['n']}.mp3"
-                generate.encode_mp3(dpcm, drate, work / dname, "64k")
+                encode_fitting(dpcm, drate, work / dname)
                 kv_put(ns, prefix + dname, (work / dname).read_bytes(), "audio/mpeg")
                 meta["figures"].append({"page": f["page"], "kind": f["kind"], "short": f["short"], "description": f["description"],
                                         "sentence": k, "at": timings[k]["start"], "file": dname, "duration": round(len(dpcm) / drate, 2)})
