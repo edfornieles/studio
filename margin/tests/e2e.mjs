@@ -64,7 +64,7 @@ try {
   page.on('pageerror', e => errors.push(e.message));
   page.on('console', m => { if (process.env.DEBUG) console.log('[console]', m.text()); if (m.type() === 'error') errors.push(m.text()); });
   page.on('requestfailed', r => { if (process.env.DEBUG) console.log('[reqfail]', r.url(), r.failure()?.errorText); });
-  await page.goto(base);
+  await page.goto(base + 'v0.html');
   await page.waitForFunction(() => window.__margin?.book);
 
   await step('welcome book loads', async () => {

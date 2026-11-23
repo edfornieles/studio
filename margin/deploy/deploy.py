@@ -17,7 +17,7 @@ NAME = "jabber"
 HOST = "jabber.edfornieles.com"
 API = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}"
 ROOT = Path(__file__).resolve().parent.parent
-INCLUDE = ["index.html", "app.css", "manifest.webmanifest", "js", "lab", "listen", "docs"]
+INCLUDE = ["index.html", "v0.html", "app.css", "manifest.webmanifest", "js", "lab", "listen", "docs"]
 TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "proxy-injected")
 
 

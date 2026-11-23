@@ -18,11 +18,24 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "deploy"))
 import generate  # noqa: E402
 from tts_engines import add_engine_args, make_engine  # noqa: E402
-from deploy import call, must, namespace, API  # noqa: E402
+from deploy import call, must, namespace, API, TOKEN  # noqa: E402
 
 
 def kv_put(ns, key, data, ctype="application/octet-stream"):
     must(call("PUT", f"{API}/storage/kv/namespaces/{ns}/values/{urllib.request.quote(key, safe='')}", data, ctype), f"upload {key}")
+
+
+def kv_get(ns, key):
+    """Raw bytes of a KV value, or None if missing."""
+    req = urllib.request.Request(f"{API}/storage/kv/namespaces/{ns}/values/{urllib.request.quote(key, safe='')}")
+    req.add_header("Authorization", f"Bearer {TOKEN}")
+    try:
+        with urllib.request.urlopen(req) as r:
+            return r.read()
+    except urllib.error.HTTPError as e:
+        if e.code == 404:
+            return None
+        raise
 
 
 def notes_section(notes):
@@ -42,13 +55,44 @@ CUE = "There's an image here: {short}."
 CUE_TAIL = "Tap Describe if you'd like to hear more about it."
 
 
+def _words(s):
+    return set(re.findall(r"[a-z0-9]+", s.lower()))
+
+
+def drop_repeated_heading(title, parts):
+    """The section title is spoken first, so skip the printed heading lines that
+    repeat it (e.g. "Preface" / "Source in the cause of New Music")."""
+    tw = _words(title)
+    out, skipping = [], True
+    for part in parts:
+        paras = part["text"].split("\n\n") if part["text"] else []
+        if skipping:
+            def mostly_title(p):
+                ws = re.findall(r"[a-z0-9]+", p.lower())
+                return ws and sum(w in tw for w in ws) / len(ws) >= 0.6
+            while paras and len(paras[0]) < 120 and (_words(paras[0]) <= tw or len(paras[0].split()) <= 2 or mostly_title(paras[0])):
+                paras.pop(0)
+            if paras:  # heading run into the first line: "letter to the editor United States …"
+                toks = paras[0].split(" ")
+                k = 0
+                while k < len(toks) and k < 12 and _words(toks[k]) and _words(toks[k]) <= tw:
+                    k += 1
+                if k >= 2:
+                    paras[0] = " ".join(toks[k:])
+            if paras or part["text"]:
+                skipping = False
+        out.append({**part, "text": "\n\n".join(paras)})
+    return out
+
+
 def section_text(sec, figures):
-    """Section text with a spoken cue where each described figure's page starts.
+    """Section text, with a spoken cue where each described figure's page starts.
     Returns (text, [figure dicts in the order their cues appear])."""
-    if not figures or not sec.get("parts"):
+    if not sec.get("parts"):
         return sec["text"], []
+    figures = figures or {}
     chunks, order = [sec.get("intro", sec["title"] + ".")], []
-    for part in sec["parts"]:
+    for part in drop_repeated_heading(sec["title"], sec["parts"]):
         for k, f in enumerate(figures.get(str(part["page"])) or []):
             short = f["short"].strip().rstrip(".")
             short = short[0].lower() + short[1:] if short[:1].isupper() and not short[1:2].isupper() else short  # keep "LP", "ONCE"
@@ -56,14 +100,15 @@ def section_text(sec, figures):
             order.append({**f, "page": part["page"], "n": k})
         if part["text"]:
             chunks.append(part["text"])
-    return "\n\n".join(chunks), order
+    return re.sub(r"[\ue000-\uf8ff]", "", "\n\n".join(chunks)), order  # drop private-use font glyphs
 
 
 def build_manifest(book, sections, work, voice):
     out = {"title": book["title"], "author": book.get("author", ""), "voice": voice, "sections": [], "notes": book.get("notes", [])}
     for i, sec in enumerate(sections, 1):
         side = work / f"section-{i:02d}.json"
-        entry = {"id": f"s{i:02d}", "title": sec["title"], "pages": sec.get("pages"), "kind": sec.get("kind", "text"), "file": None}
+        entry = {"id": f"s{i:02d}", "title": sec["title"], "pages": sec.get("pages"), "kind": sec.get("kind", "text"), "file": None,
+                 "est": round(len(sec["text"]) / 14.5)}  # estimated seconds until generated (Pocket TTS ≈ 14.5 chars/s)
         if side.exists():
             entry.update(json.loads(side.read_text()))
         out["sections"].append(entry)
@@ -82,6 +127,7 @@ def main():
     ap.add_argument("--worker", type=int, default=0)
     ap.add_argument("--workers", type=int, default=1)
     ap.add_argument("--manifest-only", action="store_true")
+    ap.add_argument("--cover", help="JPEG cover image to upload (e.g. the PDF's first page)")
     args = ap.parse_args()
 
     book = json.loads(Path(args.book).read_text())
@@ -93,8 +139,20 @@ def main():
     ns = namespace()
     prefix = f"library/{args.id}/"
 
+    if args.cover:
+        kv_put(ns, prefix + "cover.jpg", Path(args.cover).read_bytes(), "image/jpeg")
+
     def publish_manifest():
-        kv_put(ns, prefix + "manifest.json", json.dumps(build_manifest(book, sections, work, args.voice if args.engine == "pocket" else args.fish_voice), ensure_ascii=False).encode(), "application/json")
+        m = build_manifest(book, sections, work, args.voice if args.engine == "pocket" else args.fish_voice)
+        m["cover"] = "cover.jpg" if args.cover or kv_get(ns, prefix + "cover.jpg") is not None else None
+        kv_put(ns, prefix + "manifest.json", json.dumps(m, ensure_ascii=False).encode(), "application/json")
+        # Library index: one entry per book, shown on the home screen.
+        index = json.loads(kv_get(ns, "library/index.json") or b'{"books": []}')
+        entry = {"id": args.id, "title": m["title"], "author": m["author"], "cover": m["cover"],
+                 "sections": len(m["sections"]), "ready": sum(1 for s in m["sections"] if s["file"]),
+                 "seconds": round(sum(s.get("duration") or s["est"] for s in m["sections"]))}
+        index["books"] = [b for b in index["books"] if b["id"] != args.id] + [entry]
+        kv_put(ns, "library/index.json", json.dumps(index, ensure_ascii=False).encode(), "application/json")
 
     if args.manifest_only:
         publish_manifest(); return

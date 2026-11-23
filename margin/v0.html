@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Margin · Listening Library</title>
+<meta name="theme-color" content="#171815">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Margin">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<main>
+  <header>
+    <h1>margin<span class="dot">.</span></h1>
+    <span class="kicker">Listen · Collect · Think</span>
+  </header>
+
+  <section aria-labelledby="libHead">
+    <div class="kicker spaced">Your library</div>
+    <h2 id="libHead">Read with your ears.</h2>
+    <p class="muted">Your PDFs, listening positions and research marks stay on this device. No account needed.</p>
+    <div id="library"></div>
+    <div id="libraryStatus" class="small-status">Loading your library…</div>
+    <label class="file panel">
+      <strong>＋ Add a PDF to your library</strong>
+      <span class="muted">Stored privately on this device. PDFs with selectable text work best; scanned pages need OCR (not yet supported).</span>
+      <input type="file" id="upload" accept="application/pdf,.pdf">
+    </label>
+  </section>
+
+  <section class="panel" id="nowPanel" aria-labelledby="bookTitle">
+    <div class="kicker">Now listening</div>
+    <h2 id="bookTitle">—</h2>
+    <div class="muted" id="where"></div>
+    <input type="range" id="progress" min="1" max="1" value="1" aria-label="Page">
+    <div class="controls">
+      <button id="prevPage" aria-label="Previous page">← Page</button>
+      <button id="play" class="primary">▶ Listen</button>
+      <button id="nextPage" aria-label="Next page">Page →</button>
+    </div>
+    <div id="status" role="status" aria-live="polite">Tap Listen to start.</div>
+    <div class="row">
+      <label class="field">Speed
+        <select id="speed">
+          <option value="0.85">0.85×</option><option value="0.95">0.95×</option><option value="1">1×</option>
+          <option value="1.15">1.15×</option><option value="1.3">1.3×</option><option value="1.5">1.5×</option>
+        </select>
+      </label>
+      <label class="field">Narrator
+        <select id="engine">
+          <option value="device">Device voice</option>
+          <option value="remote">Narrator server</option>
+        </select>
+      </label>
+    </div>
+    <h3 class="spaced">Page text <span class="muted">· tap a sentence to listen from there</span></h3>
+    <div class="reading" id="passage" tabindex="0"></div>
+    <div class="row book-tools">
+      <button id="reextract" class="ghost">Re-read PDF text</button>
+      <button id="deleteBook" class="ghost danger">Remove book</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="noteHead">
+    <div class="kicker">Research notebook</div>
+    <h2 id="noteHead">Marks for Mother</h2>
+    <p class="muted">Marks keep the exact sentence you were hearing. Your own words are stored separately from the source text.</p>
+    <div class="row">
+      <button id="mark">☆ Mark sentence</button>
+      <button id="discuss">✎ Pause &amp; discuss</button>
+      <button id="copyPassage">⧉ Copy passage</button>
+    </div>
+    <div id="noteBox" class="note-box">
+      <blockquote id="noteContext" class="quote"></blockquote>
+      <textarea id="note" placeholder="What do you want to remember or ask about this passage?"></textarea>
+      <div class="row">
+        <button id="saveNote">Save note</button>
+        <button id="continue" class="ghost">▶ Continue listening</button>
+      </div>
+    </div>
+    <div id="marks"></div>
+    <div class="row spaced">
+      <button id="exportMd" class="ghost">↓ Notes (Markdown)</button>
+      <button id="exportJson" class="ghost">↓ Backup (JSON)</button>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="searchHead">
+    <div class="kicker">Find</div>
+    <h3 id="searchHead">Search this book</h3>
+    <input type="search" id="search" placeholder="A word or phrase (3+ letters)" autocomplete="off">
+    <div id="results"></div>
+  </section>
+
+  <section class="panel" aria-labelledby="setHead">
+    <div class="kicker">Voice &amp; playback</div>
+    <h3 id="setHead">Narrator settings</h3>
+    <div id="deviceSettings">
+      <label class="field">Style
+        <select id="narrator">
+          <option value="mother">Mother · Water Cooler (approximation)</option>
+          <option value="system">Plain system voice</option>
+        </select>
+      </label>
+      <label class="field">Device voice <select id="voice"></select></label>
+      <p class="muted">The Mother preset picks a calm British device voice and lowers the pitch slightly. It does not reproduce the recorded Water Cooler voice. That needs an authorised sample or a licensed voice on a narrator server.</p>
+    </div>
+    <div id="remoteSettings">
+      <label class="field">Narrator server URL <input type="url" id="endpoint" placeholder="https://…/tts" autocomplete="off" spellcheck="false"></label>
+      <label class="field">Server voice id <input type="text" id="remoteVoice" placeholder="optional" autocomplete="off" spellcheck="false"></label>
+      <p class="muted">The server turns each sentence into an audio file and keeps API keys on the server side (see <code>docs/tts-backend.md</code>). Audio is cached on this device. Lock-screen controls work with this narrator.</p>
+    </div>
+
+    <details id="diag">
+      <summary>Playback diagnostics</summary>
+      <p class="muted">If you hear nothing on iPhone, run these in order and copy the report.</p>
+      <div class="row">
+        <button id="testTone">1 · Test tone</button>
+        <button id="testVoice">2 · Test device voice</button>
+        <button id="testRemote">3 · Test narrator server</button>
+      </div>
+      <ul class="muted tips">
+        <li>The tone plays but the device voice stays silent: flip the ring/silent switch off and turn the volume up, then pick another voice above. Some voices must be downloaded first in Settings › Accessibility › Spoken Content.</li>
+        <li>Nothing plays at all: check Bluetooth/AirPlay routing. Open the page in Safari itself, not an in-app or Files preview.</li>
+        <li>The device voice stops when the phone locks. That's an iOS limit. Use a narrator server for lock-screen listening.</li>
+      </ul>
+      <div id="envSummary" class="muted"></div>
+      <pre id="log"></pre>
+      <button id="copyDiag">Copy diagnostics report</button>
+    </details>
+  </section>
+
+  <div class="foot">Margin 0.3 · Local-first prototype. Uploaded PDFs never leave this device unless you set up a narrator server, which receives one sentence at a time.</div>
+</main>
+
+<nav class="miniplayer" aria-label="Player">
+  <button id="back" aria-label="Previous sentence">⟲</button>
+  <button id="miniPlay" class="primary" aria-label="Play">▶</button>
+  <button id="fwd" aria-label="Next sentence">⟳</button>
+  <div class="mini-info"><strong id="miniTitle"></strong><small id="miniWhere"></small></div>
+</nav>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>

@@ -3,147 +3,634 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Margin · Listening Library</title>
-<meta name="theme-color" content="#171815">
+<title>Jabber</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#f6f4ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f0f0e" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Margin">
-<link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="app.css">
+<meta name="apple-mobile-web-app-title" content="Jabber">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="apple-touch-icon" href="/lab/cover.png">
+<style>
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --raised: #efece5; --ink: #171614; --soft: #6f6a62; --faint: #e3dfd6;
+  --accent: #a8542f; --accent-ink: #ffffff; --shadow: 0 18px 40px rgba(40, 30, 20, .18);
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  color-scheme: light dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root { --bg: #0f0f0e; --surface: #1a1918; --raised: #232220; --ink: #f1eee7; --soft: #9a958b; --faint: #2d2b28;
+    --accent: #e08a5c; --accent-ink: #1a1009; --shadow: 0 18px 44px rgba(0, 0, 0, .55); }
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--ink); -webkit-text-size-adjust: 100%; }
+body { font: 16px/1.45 var(--sans); }
+button { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; touch-action: manipulation; }
+img { display: block; }
+svg { display: block; }
+svg:not([fill]) { fill: currentColor; }
+.ic { position: relative; }
+.ic b { position: absolute; font-size: 9px; font-weight: 700; top: 50%; left: 50%; transform: translate(-50%, -38%); line-height: 1; }
+[hidden] { display: none !important; }
+
+/* ---------- library ---------- */
+.home { max-width: 640px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 20px calc(110px + env(safe-area-inset-bottom)); }
+.brand { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--soft); }
+.home h1 { font-size: 34px; line-height: 1.1; letter-spacing: -.02em; margin: 6px 0 22px; font-weight: 700; }
+.label { font-size: 13px; font-weight: 600; color: var(--soft); text-transform: uppercase; letter-spacing: .06em; margin: 30px 0 12px; }
+
+.cover { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--raised); flex: none; position: relative; }
+.cover img { width: 100%; height: 100%; object-fit: cover; object-position: right center; }
+.cover .type { position: absolute; inset: 0; padding: 12% 11%; display: flex; flex-direction: column; justify-content: flex-end; font: 600 15px/1.15 var(--serif); }
+
+.continue { display: flex; gap: 16px; align-items: center; background: var(--surface); border-radius: 16px; padding: 14px; width: 100%; text-align: left; box-shadow: 0 1px 0 var(--faint); }
+.continue .cover { width: 104px; }
+.continue .meta { flex: 1; min-width: 0; }
+.continue .t { font-weight: 600; font-size: 17px; line-height: 1.25; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.continue .c { font-size: 13px; color: var(--soft); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bar { height: 3px; background: var(--faint); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+.bar i { display: block; height: 100%; background: var(--accent); border-radius: 3px; }
+.left { font-size: 12px; color: var(--soft); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.round { width: 48px; height: 48px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; flex: none; }
+.round svg { width: 20px; height: 20px; }
+
+.titles { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 22px 16px; }
+.title-card { text-align: left; }
+.title-card .t { font-size: 14px; font-weight: 600; margin-top: 9px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.title-card .a { font-size: 12px; color: var(--soft); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.empty { margin-top: 18vh; font: 20px/1.5 var(--serif); color: var(--soft); }
+.foot { margin-top: 44px; font-size: 12px; color: var(--soft); }
+.foot a { color: var(--soft); }
+
+/* ---------- mini player ---------- */
+.mini { position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); max-width: 620px; margin: 0 auto; display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 8px; background: var(--surface); border-radius: 14px; box-shadow: var(--shadow); }
+.mini .cover { width: 46px; border-radius: 6px; }
+.mini .meta { flex: 1; min-width: 0; text-align: left; }
+.mini .t, .mini .c { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini .t { font-size: 14px; font-weight: 600; }
+.mini .c { font-size: 12px; color: var(--soft); }
+.mini .ic { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; }
+.mini .ic svg { width: 24px; height: 24px; }
+.mini .prog { position: absolute; left: 14px; right: 14px; bottom: 3px; height: 2px; background: var(--faint); border-radius: 2px; overflow: hidden; }
+.mini .prog i { display: block; height: 100%; background: var(--ink); }
+
+/* ---------- player ---------- */
+.player { position: fixed; inset: 0; background: var(--bg); overflow-y: auto; transform: translateY(100%); transition: transform .32s cubic-bezier(.2, .8, .2, 1); z-index: 10; }
+.player.open { transform: none; }
+.pwrap { max-width: 520px; margin: 0 auto; min-height: 100%; padding: calc(8px + env(safe-area-inset-top)) 24px calc(20px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; }
+.ptop { display: flex; align-items: center; justify-content: space-between; height: 48px; }
+.ptop .ic { width: 44px; height: 44px; display: grid; place-items: center; color: var(--soft); }
+.ptop .ic svg { width: 24px; height: 24px; }
+.ptop .where { font-size: 13px; color: var(--soft); font-variant-numeric: tabular-nums; }
+.art { width: min(68vw, 300px, 31svh); margin: 6px auto 0; box-shadow: var(--shadow); border-radius: 10px; }
+.ptitle { text-align: center; margin-top: 16px; }
+.ptitle .chap { font-size: 18px; font-weight: 650; line-height: 1.3; letter-spacing: -.01em; }
+.ptitle .book { font-size: 14px; color: var(--soft); margin-top: 4px; }
+.flag { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--accent); font-weight: 600; }
+.line { margin: 12px auto 0; max-width: 34em; min-height: 4.6em; text-align: center; font: 16px/1.5 var(--serif); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--soft); }
+.describe { display: block; margin: 10px auto 0; padding: 8px 16px; border: 1px solid var(--accent); color: var(--accent); border-radius: 20px; font-size: 14px; font-weight: 600; }
+.panel-text { margin: 14px 0 0; padding: 14px 16px; background: var(--surface); border-radius: 12px; font: 15px/1.55 var(--serif); white-space: pre-wrap; }
+.panel-text small { display: block; font: 600 11px/1.3 var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+
+.scrub { margin-top: auto; padding-top: 12px; }
+.track { position: relative; height: 26px; touch-action: none; cursor: pointer; }
+.track::before { content: ""; position: absolute; left: 0; right: 0; top: 11px; height: 4px; background: var(--faint); border-radius: 4px; }
+.track .fill { position: absolute; left: 0; top: 11px; height: 4px; background: var(--ink); border-radius: 4px; width: 0; }
+.track .knob { position: absolute; top: 6px; width: 14px; height: 14px; margin-left: -7px; border-radius: 50%; background: var(--ink); left: 0; }
+.times { display: flex; justify-content: space-between; font-size: 12px; color: var(--soft); font-variant-numeric: tabular-nums; }
+.booktime { text-align: center; font-size: 12px; color: var(--soft); margin-top: 2px; }
+
+.controls { display: flex; justify-content: space-between; align-items: center; margin: 8px 4px 0; }
+.controls .ic { width: 52px; height: 52px; display: grid; place-items: center; border-radius: 50%; color: var(--ink); position: relative; }
+.controls .ic svg { width: 30px; height: 30px; }
+.controls .ic.sm svg { width: 24px; height: 24px; color: var(--soft); }
+.controls .ic:active { background: var(--raised); }
+.big { width: 70px; height: 70px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; }
+.big svg { width: 30px; height: 30px; }
+.big:active { transform: scale(.96); }
+
+.tools { display: flex; justify-content: space-around; margin-top: 14px; }
+.tools button { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; color: var(--soft); min-width: 64px; }
+.tools svg { width: 22px; height: 22px; color: var(--ink); }
+.tools .val { font-size: 12px; color: var(--ink); font-weight: 600; height: 22px; display: grid; place-items: center; font-variant-numeric: tabular-nums; }
+.tools .on svg, .tools .on .val { color: var(--accent); }
+
+/* ---------- sheets ---------- */
+.scrim { position: fixed; inset: 0; background: rgba(0, 0, 0, .35); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 640px; margin: 0 auto; max-height: 82svh; overflow-y: auto; background: var(--surface); border-radius: 18px 18px 0 0; z-index: 21; padding: 10px 20px calc(24px + env(safe-area-inset-bottom)); transform: translateY(105%); transition: transform .28s cubic-bezier(.2, .8, .2, 1); }
+.sheet.open { transform: none; }
+.sheet .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--faint); margin: 0 auto 12px; }
+.sheet h2 { font-size: 17px; margin: 0 0 6px; }
+.sheet .sub { font-size: 13px; color: var(--soft); margin-bottom: 8px; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.rows button { width: 100%; display: flex; gap: 12px; align-items: baseline; justify-content: space-between; padding: 13px 0; border-bottom: 1px solid var(--faint); text-align: left; font-size: 15px; line-height: 1.35; }
+.rows .n { color: var(--soft); font-size: 13px; width: 26px; flex: none; font-variant-numeric: tabular-nums; }
+.rows .x { flex: 1; min-width: 0; }
+.rows .x small { display: block; color: var(--soft); font-size: 13px; margin-top: 2px; }
+.rows .x .mk { color: var(--accent); font-size: 12px; font-weight: 600; }
+.rows .d { color: var(--soft); font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rows .on button { color: var(--accent); }
+.rows .on .n, .rows .on .d { color: var(--accent); }
+.rows .wait button { opacity: .45; cursor: default; }
+.rows .sel button::after { content: "✓"; color: var(--accent); }
+.primary { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 600; }
+.note-in { width: 100%; margin-top: 10px; font: 15px/1.45 var(--sans); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--faint); background: var(--bg); color: var(--ink); min-height: 70px; resize: vertical; }
+pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word-break: break-word; max-height: 50svh; overflow: auto; color: var(--soft); }
+</style>
 </head>
 <body>
-<main>
-  <header>
-    <h1>margin<span class="dot">.</span></h1>
-    <span class="kicker">Listen · Collect · Think</span>
-  </header>
 
-  <section aria-labelledby="libHead">
-    <div class="kicker spaced">Your library</div>
-    <h2 id="libHead">Read with your ears.</h2>
-    <p class="muted">Your PDFs, listening positions and research marks stay on this device. No account needed.</p>
-    <div id="library"></div>
-    <div id="libraryStatus" class="small-status">Loading your library…</div>
-    <label class="file panel">
-      <strong>＋ Add a PDF to your library</strong>
-      <span class="muted">Stored privately on this device. PDFs with selectable text work best; scanned pages need OCR (not yet supported).</span>
-      <input type="file" id="upload" accept="application/pdf,.pdf">
-    </label>
-  </section>
-
-  <section class="panel" id="nowPanel" aria-labelledby="bookTitle">
-    <div class="kicker">Now listening</div>
-    <h2 id="bookTitle">—</h2>
-    <div class="muted" id="where"></div>
-    <input type="range" id="progress" min="1" max="1" value="1" aria-label="Page">
-    <div class="controls">
-      <button id="prevPage" aria-label="Previous page">← Page</button>
-      <button id="play" class="primary">▶ Listen</button>
-      <button id="nextPage" aria-label="Next page">Page →</button>
-    </div>
-    <div id="status" role="status" aria-live="polite">Tap Listen to start.</div>
-    <div class="row">
-      <label class="field">Speed
-        <select id="speed">
-          <option value="0.85">0.85×</option><option value="0.95">0.95×</option><option value="1">1×</option>
-          <option value="1.15">1.15×</option><option value="1.3">1.3×</option><option value="1.5">1.5×</option>
-        </select>
-      </label>
-      <label class="field">Narrator
-        <select id="engine">
-          <option value="device">Device voice</option>
-          <option value="remote">Narrator server</option>
-        </select>
-      </label>
-    </div>
-    <h3 class="spaced">Page text <span class="muted">· tap a sentence to listen from there</span></h3>
-    <div class="reading" id="passage" tabindex="0"></div>
-    <div class="row book-tools">
-      <button id="reextract" class="ghost">Re-read PDF text</button>
-      <button id="deleteBook" class="ghost danger">Remove book</button>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="noteHead">
-    <div class="kicker">Research notebook</div>
-    <h2 id="noteHead">Marks for Mother</h2>
-    <p class="muted">Marks keep the exact sentence you were hearing. Your own words are stored separately from the source text.</p>
-    <div class="row">
-      <button id="mark">☆ Mark sentence</button>
-      <button id="discuss">✎ Pause &amp; discuss</button>
-      <button id="copyPassage">⧉ Copy passage</button>
-    </div>
-    <div id="noteBox" class="note-box">
-      <blockquote id="noteContext" class="quote"></blockquote>
-      <textarea id="note" placeholder="What do you want to remember or ask about this passage?"></textarea>
-      <div class="row">
-        <button id="saveNote">Save note</button>
-        <button id="continue" class="ghost">▶ Continue listening</button>
-      </div>
-    </div>
-    <div id="marks"></div>
-    <div class="row spaced">
-      <button id="exportMd" class="ghost">↓ Notes (Markdown)</button>
-      <button id="exportJson" class="ghost">↓ Backup (JSON)</button>
-    </div>
-  </section>
-
-  <section class="panel" aria-labelledby="searchHead">
-    <div class="kicker">Find</div>
-    <h3 id="searchHead">Search this book</h3>
-    <input type="search" id="search" placeholder="A word or phrase (3+ letters)" autocomplete="off">
-    <div id="results"></div>
-  </section>
-
-  <section class="panel" aria-labelledby="setHead">
-    <div class="kicker">Voice &amp; playback</div>
-    <h3 id="setHead">Narrator settings</h3>
-    <div id="deviceSettings">
-      <label class="field">Style
-        <select id="narrator">
-          <option value="mother">Mother · Water Cooler (approximation)</option>
-          <option value="system">Plain system voice</option>
-        </select>
-      </label>
-      <label class="field">Device voice <select id="voice"></select></label>
-      <p class="muted">The Mother preset picks a calm British device voice and lowers the pitch slightly. It does not reproduce the recorded Water Cooler voice. That needs an authorised sample or a licensed voice on a narrator server.</p>
-    </div>
-    <div id="remoteSettings">
-      <label class="field">Narrator server URL <input type="url" id="endpoint" placeholder="https://…/tts" autocomplete="off" spellcheck="false"></label>
-      <label class="field">Server voice id <input type="text" id="remoteVoice" placeholder="optional" autocomplete="off" spellcheck="false"></label>
-      <p class="muted">The server turns each sentence into an audio file and keeps API keys on the server side (see <code>docs/tts-backend.md</code>). Audio is cached on this device. Lock-screen controls work with this narrator.</p>
-    </div>
-
-    <details id="diag">
-      <summary>Playback diagnostics</summary>
-      <p class="muted">If you hear nothing on iPhone, run these in order and copy the report.</p>
-      <div class="row">
-        <button id="testTone">1 · Test tone</button>
-        <button id="testVoice">2 · Test device voice</button>
-        <button id="testRemote">3 · Test narrator server</button>
-      </div>
-      <ul class="muted tips">
-        <li>The tone plays but the device voice stays silent: flip the ring/silent switch off and turn the volume up, then pick another voice above. Some voices must be downloaded first in Settings › Accessibility › Spoken Content.</li>
-        <li>Nothing plays at all: check Bluetooth/AirPlay routing. Open the page in Safari itself, not an in-app or Files preview.</li>
-        <li>The device voice stops when the phone locks. That's an iOS limit. Use a narrator server for lock-screen listening.</li>
-      </ul>
-      <div id="envSummary" class="muted"></div>
-      <pre id="log"></pre>
-      <button id="copyDiag">Copy diagnostics report</button>
-    </details>
-  </section>
-
-  <div class="foot">Margin 0.3 · Local-first prototype. Uploaded PDFs never leave this device unless you set up a narrator server, which receives one sentence at a time.</div>
+<main class="home" id="home">
+  <div class="brand">Jabber</div>
+  <h1>Library</h1>
+  <div id="libbody"></div>
+  <div class="foot"><button id="openLog">Playback log</button> · <a href="/lab/">Lock-screen test</a></div>
 </main>
 
-<nav class="miniplayer" aria-label="Player">
-  <button id="back" aria-label="Previous sentence">⟲</button>
-  <button id="miniPlay" class="primary" aria-label="Play">▶</button>
-  <button id="fwd" aria-label="Next sentence">⟳</button>
-  <div class="mini-info"><strong id="miniTitle"></strong><small id="miniWhere"></small></div>
-</nav>
+<button class="mini" id="mini" hidden aria-label="Open player">
+  <div class="cover" id="miniCover"></div>
+  <div class="meta"><div class="t" id="miniTitle"></div><div class="c" id="miniChap"></div></div>
+  <span class="ic" id="miniPlay" role="button" aria-label="Play"></span>
+  <span class="ic" id="miniFwd" role="button" aria-label="Forward 30 seconds"></span>
+  <div class="prog"><i id="miniProg"></i></div>
+</button>
 
-<script type="module" src="js/app.js"></script>
+<section class="player" id="player" aria-label="Player">
+  <div class="pwrap">
+    <div class="ptop">
+      <button class="ic" id="close" aria-label="Close player"></button>
+      <span class="where" id="where"></span>
+      <button class="ic" id="chapBtnTop" aria-label="Chapters"></button>
+    </div>
+    <div class="cover art" id="art"></div>
+    <div class="ptitle">
+      <div class="chap" id="chap"></div>
+      <div class="book" id="bookName"></div>
+      <span class="flag" id="flag" hidden>◆ Mother suggestion · tap for note</span>
+    </div>
+    <p class="line" id="line"></p>
+    <button class="describe" id="describe" hidden>Describe this image</button>
+    <div class="panel-text" id="panel" hidden></div>
+    <div class="scrub">
+      <div class="track" id="track" role="slider" aria-label="Position in chapter" tabindex="0"><div class="fill" id="fill"></div><div class="knob" id="knob"></div></div>
+      <div class="times"><span id="cur">0:00</span><span id="rem">-0:00</span></div>
+      <div class="booktime" id="booktime"></div>
+    </div>
+    <div class="controls">
+      <button class="ic sm" id="prev" aria-label="Previous chapter"></button>
+      <button class="ic" id="back" aria-label="Back 30 seconds"></button>
+      <button class="big" id="play" aria-label="Play"></button>
+      <button class="ic" id="fwd" aria-label="Forward 30 seconds"></button>
+      <button class="ic sm" id="next" aria-label="Next chapter"></button>
+    </div>
+    <div class="tools">
+      <button id="speedBtn"><span class="val" id="speedVal">1×</span>Speed</button>
+      <button id="sleepBtn"><span id="sleepIc"></span><span id="sleepVal">Sleep</span></button>
+      <button id="chapBtn"><span id="chapIc"></span>Chapters</button>
+      <button id="markBtn"><span id="markIc"></span>Bookmarks</button>
+    </div>
+  </div>
+</section>
+
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true"><div class="grab"></div><div id="sheetBody"></div></div>
+
+<audio id="audio" preload="auto" playsinline></audio>
+
+<script>
+// Jabber: library + player. One <audio> element, one MP3 per chapter
+// (section), Media Session lock-screen controls. Book files live under
+// /library/ behind the private key from the personal link.
+const $ = id => document.getElementById(id);
+const audio = $('audio');
+const store = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+
+// ---------- icons ----------
+const I = {
+  play: '<svg viewBox="0 0 24 24"><path d="M7 4.6v14.8c0 .8.9 1.3 1.6.8l11-7.4c.6-.4.6-1.2 0-1.6l-11-7.4C7.9 3.3 7 3.8 7 4.6z"/></svg>',
+  pause: '<svg viewBox="0 0 24 24"><rect x="6" y="4.5" width="4" height="15" rx="1.2"/><rect x="14" y="4.5" width="4" height="15" rx="1.2"/></svg>',
+  back: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v3.7h3.7"/></svg>',
+  fwd: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v3.7h-3.7"/></svg>',
+  prev: '<svg viewBox="0 0 24 24"><rect x="5" y="5" width="2.2" height="14" rx="1"/><path d="M19 5.8v12.4c0 .8-.9 1.2-1.5.7L9.3 12.8a1 1 0 0 1 0-1.6l8.2-6.1c.6-.5 1.5-.1 1.5.7z"/></svg>',
+  next: '<svg viewBox="0 0 24 24"><rect x="16.8" y="5" width="2.2" height="14" rx="1"/><path d="M5 5.8v12.4c0 .8.9 1.2 1.5.7l8.2-6.1a1 1 0 0 0 0-1.6L6.5 5.1C5.9 4.6 5 5 5 5.8z"/></svg>',
+  down: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9.5l6 6 6-6"/></svg>',
+  list: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M9 6.5h11M9 12h11M9 17.5h11"/><circle cx="4.5" cy="6.5" r=".6" fill="currentColor"/><circle cx="4.5" cy="12" r=".6" fill="currentColor"/><circle cx="4.5" cy="17.5" r=".6" fill="currentColor"/></svg>',
+  moon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z"/></svg>',
+  mark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M6.5 4h11v16l-5.5-4-5.5 4z"/></svg>',
+};
+const fwdIcon = n => I.fwd.replace('</svg>', '') + `</svg><b>${n}</b>`;
+const backIcon = n => I.back.replace('</svg>', '') + `</svg><b>${n}</b>`;
+$('close').innerHTML = I.down; $('chapBtnTop').innerHTML = I.list;
+$('prev').innerHTML = I.prev; $('next').innerHTML = I.next;
+$('back').innerHTML = backIcon(30); $('fwd').innerHTML = fwdIcon(30);
+$('miniFwd').innerHTML = fwdIcon(30);
+$('sleepIc').innerHTML = I.moon; $('chapIc').innerHTML = I.list; $('markIc').innerHTML = I.mark;
+
+// ---------- access key & library ----------
+const params = new URLSearchParams(location.search);
+if (params.get('key')) store.set('jabber-key', params.get('key'));
+const KEY = params.get('key') || store.get('jabber-key', '');
+const q = KEY ? `?key=${encodeURIComponent(KEY)}` : '';
+const lib = id => `/library/${encodeURIComponent(id)}/`;
+const RATES = [0.9, 1, 1.15, 1.3, 1.5, 1.75];
+
+let books = [], manifests = {};
+let book = null, m = null, idx = 0, sentences = [];
+let wantPlaying = false, waitingForNext = false, describing = null, lastSave = 0;
+let sleepAt = 0, sleepEndOfChapter = false, sleepTimer = 0;
+
+// ---------- log ----------
+let entries = store.get('jabber-log', []);
+function log(msg) {
+  entries.push(`${new Date().toLocaleTimeString([], { hour12: false })} ${msg}`);
+  if (entries.length > 300) entries = entries.slice(-300);
+  store.set('jabber-log', entries);
+}
+
+// ---------- formatting ----------
+const fmt = s => { s = Math.max(0, Math.floor(s || 0)); const h = Math.floor(s / 3600), mm = Math.floor(s / 60) % 60, ss = String(s % 60).padStart(2, '0'); return h ? `${h}:${String(mm).padStart(2, '0')}:${ss}` : `${mm}:${ss}`; };
+const human = s => { s = Math.max(0, Math.round(s / 60)); const h = Math.floor(s / 60), mm = s % 60; return h ? `${h}h ${mm}m` : `${mm}m`; };
+const shortTitle = t => t.split(':')[0];
+const secLen = s => s.duration || s.est || 0;
+const ready = i => !!m?.sections[i]?.file;
+const nextReady = i => { for (let k = i + 1; k < m.sections.length; k++) if (ready(k)) return k; return -1; };
+const prevReady = i => { for (let k = i - 1; k >= 0; k--) if (ready(k)) return k; return -1; };
+const notesFor = s => (m.notes || []).filter(n => s.pages && n.page >= s.pages[0] && n.page <= s.pages[1]);
+const posOf = id => store.get(`jabber-pos-${id}`, null);
+function bookProgress(man, pos) {
+  const total = man.sections.reduce((n, s) => n + secLen(s), 0);
+  let done = 0;
+  if (pos) { for (let i = 0; i < pos.idx && i < man.sections.length; i++) done += secLen(man.sections[i]); done += pos.t || 0; }
+  return { total, done, left: Math.max(0, total - done), frac: total ? Math.min(1, done / total) : 0 };
+}
+
+function coverEl(b, el) {
+  el.replaceChildren();
+  if (b.cover) {
+    const img = document.createElement('img');
+    img.alt = ''; img.src = lib(b.id) + b.cover + q; img.loading = 'lazy';
+    img.onerror = () => { el.replaceChildren(typeCover(b)); };
+    el.append(img);
+  } else el.append(typeCover(b));
+}
+function typeCover(b) {
+  const d = document.createElement('div'); d.className = 'type'; d.textContent = shortTitle(b.title); return d;
+}
+
+async function getJSON(url) {
+  const r = await fetch(url, { cache: 'no-cache' });
+  if (r.status === 401) throw new Error('private');
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadLibrary() {
+  const body = $('libbody');
+  if (!KEY) { body.innerHTML = '<p class="empty">Open your personal link once to unlock your library on this device.</p>'; return; }
+  try { books = (await getJSON('/library/index.json' + q)).books || []; }
+  catch (e) { body.innerHTML = `<p class="empty">${e.message === 'private' ? 'This link’s key isn’t valid any more.' : 'Couldn’t load your library (' + e.message + ').'}</p>`; return; }
+  await Promise.all(books.map(async b => { try { manifests[b.id] = await getJSON(lib(b.id) + 'manifest.json' + q); } catch {} }));
+  renderLibrary();
+  const last = store.get('jabber-last', null);
+  const pick = books.find(b => b.id === last) || books[0];
+  if (pick && manifests[pick.id] && !book) openBook(pick.id, { show: false });
+}
+
+function renderLibrary() {
+  const body = $('libbody');
+  body.replaceChildren();
+  if (!books.length) { body.innerHTML = '<p class="empty">No books yet.</p>'; return; }
+  const last = store.get('jabber-last', null);
+  const cont = books.find(b => b.id === last) || books[0];
+  const man = manifests[cont.id];
+  if (man) {
+    const lab = document.createElement('div'); lab.className = 'label'; lab.textContent = 'Continue listening';
+    const card = document.createElement('div'); card.className = 'continue'; card.role = 'button'; card.tabIndex = 0;
+    const cv = document.createElement('div'); cv.className = 'cover'; coverEl(cont, cv);
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const pos = posOf(cont.id) || { idx: firstListenable(man), t: 0 };
+    const pr = bookProgress(man, pos);
+    const sec = man.sections[pos.idx] || man.sections[0];
+    meta.innerHTML = `<div class="t"></div><div class="c"></div><div class="bar"><i style="width:${(pr.frac * 100).toFixed(1)}%"></i></div><div class="left">${human(pr.left)} left${man.sections.some(s => !s.file) ? ' · still generating' : ''}</div>`;
+    meta.querySelector('.t').textContent = shortTitle(man.title);
+    meta.querySelector('.c').textContent = sec.title;
+    const pb = document.createElement('span'); pb.className = 'round'; pb.innerHTML = I.play; pb.setAttribute('aria-label', 'Play');
+    pb.onclick = e => { e.stopPropagation(); if (book?.id !== cont.id) openBook(cont.id, { show: false }); play(); };
+    card.onclick = () => openBook(cont.id, { show: true });
+    card.append(cv, meta, pb);
+    body.append(lab, card);
+  }
+  const lab2 = document.createElement('div'); lab2.className = 'label'; lab2.textContent = 'All titles';
+  const grid = document.createElement('div'); grid.className = 'titles';
+  for (const b of books) {
+    const c = document.createElement('button'); c.className = 'title-card';
+    const cv = document.createElement('div'); cv.className = 'cover'; coverEl(b, cv);
+    const t = document.createElement('div'); t.className = 't'; t.textContent = shortTitle(b.title);
+    const a = document.createElement('div'); a.className = 'a'; a.textContent = b.author;
+    c.append(cv, t, a); c.onclick = () => openBook(b.id, { show: true });
+    grid.append(c);
+  }
+  body.append(lab2, grid);
+}
+
+function firstListenable(man) {
+  const i = man.sections.findIndex(s => s.file && s.kind !== 'notes');
+  return i >= 0 ? i : Math.max(0, man.sections.findIndex(s => s.file));
+}
+
+// ---------- open / select ----------
+function openBook(id, { show }) {
+  const man = manifests[id];
+  if (!man) return;
+  if (book?.id !== id) {
+    describing = null;
+    book = books.find(b => b.id === id); m = man;
+    store.set('jabber-last', id);
+    const pos = posOf(id);
+    const start = pos && ready(pos.idx) ? pos : { idx: firstListenable(m), t: 0 };
+    select(start.idx, start.t);
+    setRate(store.get('jabber-rate', 1));
+    coverEl(book, $('art')); coverEl(book, $('miniCover'));
+    $('bookName').textContent = shortTitle(m.title) + (m.author ? ' · ' + m.author.replace(/^Edited by /, '') : '');
+    $('mini').hidden = false;
+  }
+  if (show) openPlayer();
+}
+
+function select(i, t = 0) {
+  idx = i;
+  const s = m.sections[i];
+  sentences = s.sentences || [];
+  audio.src = lib(book.id) + s.file + q;
+  audio.playbackRate = audio.defaultPlaybackRate = store.get('jabber-rate', 1);
+  if (t) { const seek = () => { audio.currentTime = t; audio.removeEventListener('loadedmetadata', seek); }; audio.addEventListener('loadedmetadata', seek); }
+  $('chap').textContent = s.title;
+  $('miniTitle').textContent = shortTitle(m.title);
+  $('miniChap').textContent = s.title;
+  $('where').textContent = `Chapter ${i + 1} of ${m.sections.length}`;
+  const notes = s.kind === 'notes' ? [] : notesFor(s);
+  $('flag').hidden = !notes.length;
+  $('panel').hidden = true;
+  setMetadata();
+  const n = nextReady(i);
+  if (n >= 0) fetch(lib(book.id) + m.sections[n].file + q).then(r => r.blob()).then(b => log(`prefetched ${m.sections[n].id} (${Math.round(b.size / 1024)} KB)`)).catch(() => {});
+  render();
+}
+
+function setMetadata() {
+  if (!('mediaSession' in navigator) || !m) return;
+  const art = book.cover ? [{ src: location.origin + lib(book.id) + book.cover + q, sizes: '900x720', type: 'image/jpeg' }]
+    : [{ src: location.origin + '/lab/cover.png', sizes: '512x512', type: 'image/png' }];
+  navigator.mediaSession.metadata = new MediaMetadata({ title: m.sections[idx].title, artist: shortTitle(m.title), album: 'Jabber', artwork: art });
+}
+
+// ---------- playback ----------
+function play() {
+  if (!m) return;
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch {}
+  wantPlaying = true;
+  audio.play()?.catch(e => log(`play() rejected: ${e.name} ${e.message}`));
+}
+function pause() { wantPlaying = false; audio.pause(); }
+function seekBy(d) { audio.currentTime = Math.max(0, Math.min((audio.duration || 0) - 0.3, audio.currentTime + d)); }
+function goChapter(i, autoplay = true) { if (i < 0 || !ready(i)) return; describing = null; select(i, 0); if (autoplay) play(); }
+function setRate(r) {
+  audio.playbackRate = audio.defaultPlaybackRate = r;
+  store.set('jabber-rate', r);
+  $('speedVal').textContent = `${r}×`;
+}
+
+audio.addEventListener('ended', () => {
+  if (describing) { endDescription(); return; }
+  log(`ended ${m.sections[idx].id} (locked: ${document.hidden})`);
+  if (sleepEndOfChapter) { sleepEndOfChapter = false; setSleepLabel(); wantPlaying = false; log('sleep: end of chapter'); return; }
+  const n = nextReady(idx);
+  if (n >= 0) { select(n); play(); log('hand-over → ' + m.sections[n].id); }
+  else if (idx < m.sections.length - 1) { waitingForNext = true; wantPlaying = false; $('line').textContent = 'The next chapter is still being prepared. It will start as soon as it is ready.'; }
+  else { wantPlaying = false; log('finished the book'); }
+});
+for (const ev of ['playing', 'pause', 'stalled', 'error']) {
+  audio.addEventListener(ev, () => {
+    if (ev === 'error') log(`ERROR ${audio.error?.code} at ${m?.sections[idx]?.id}`);
+    else if (!(ev === 'pause' && audio.ended)) log(`${ev} ${m?.sections[idx]?.id}@${fmt(audio.currentTime)}${document.hidden ? ' [locked]' : ''}${ev === 'pause' && wantPlaying ? ' ← not requested' : ''}`);
+    render();
+  });
+}
+audio.addEventListener('timeupdate', () => {
+  render();
+  if ('mediaSession' in navigator && audio.duration && navigator.mediaSession.setPositionState) {
+    try { navigator.mediaSession.setPositionState({ duration: audio.duration, position: Math.min(audio.currentTime, audio.duration), playbackRate: audio.playbackRate }); } catch {}
+  }
+  if (!describing && book && Date.now() - lastSave > 4000) { lastSave = Date.now(); store.set(`jabber-pos-${book.id}`, { idx, t: audio.currentTime }); }
+});
+audio.addEventListener('loadedmetadata', render);
+
+if ('mediaSession' in navigator) {
+  const h = (a, fn) => { try { navigator.mediaSession.setActionHandler(a, fn); } catch {} };
+  h('play', () => { log('lock-screen: play'); play(); });
+  h('pause', () => { log('lock-screen: pause'); pause(); });
+  h('seekbackward', d => seekBy(-(d.seekOffset || 30)));
+  h('seekforward', d => seekBy(d.seekOffset || 30));
+  h('seekto', d => { audio.currentTime = d.seekTime; });
+  h('previoustrack', () => { if (audio.currentTime > 5) audio.currentTime = 0; else goChapter(prevReady(idx)); });
+  h('nexttrack', () => goChapter(nextReady(idx)));
+}
+
+// Manifest refresh: new chapters appear while a book is still generating.
+async function refresh() {
+  if (!book) return;
+  try {
+    const fresh = await getJSON(lib(book.id) + 'manifest.json' + q);
+    const before = m.sections.filter(s => s.file).length, after = fresh.sections.filter(s => s.file).length;
+    manifests[book.id] = m = fresh;
+    if (after !== before) { log(`${after - before} more chapter(s) ready`); renderLibrary(); }
+    if (waitingForNext) { const n = nextReady(idx); if (n >= 0) { waitingForNext = false; select(n); play(); } }
+  } catch (e) { log('refresh failed ' + e.message); }
+}
+setInterval(refresh, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); render(); } });
+
+// ---------- image descriptions ----------
+function currentFigure() {
+  const figs = m?.sections[idx]?.figures || [];
+  let found = null;
+  for (const f of figs) if (audio.currentTime >= f.at - 0.5 && audio.currentTime <= f.at + 90) found = f;
+  return found;
+}
+function describeFigure(f) {
+  describing = { fig: f, returnTo: { idx, t: audio.currentTime } };
+  log(`describe image p${f.page}`);
+  audio.src = lib(book.id) + f.file + q;
+  audio.playbackRate = store.get('jabber-rate', 1);
+  showPanel(`Image · page ${f.page} · ${f.kind}`, f.description);
+  play();
+}
+function endDescription() {
+  const r = describing.returnTo;
+  describing = null;
+  select(r.idx, r.t);
+  play();
+}
+$('describe').onclick = () => { if (describing) endDescription(); else { const f = currentFigure(); if (f) describeFigure(f); } };
+function showPanel(label, text) {
+  const p = $('panel'); p.hidden = false; p.replaceChildren();
+  const s = document.createElement('small'); s.textContent = label; p.append(s, text);
+}
+$('flag').onclick = () => {
+  const ns = notesFor(m.sections[idx]);
+  if ($('panel').hidden) showPanel('Mother suggestion', ns.map(n => n.text.replace(/\n\nStatus:[\s\S]*$/, '')).join('\n\n'));
+  else $('panel').hidden = true;
+};
+
+// ---------- rendering ----------
+function render() {
+  if (!m) return;
+  const playing = !audio.paused;
+  $('play').innerHTML = playing ? I.pause : I.play;
+  $('play').setAttribute('aria-label', playing ? 'Pause' : 'Play');
+  $('miniPlay').innerHTML = playing ? I.pause : I.play;
+  const d = audio.duration || m.sections[idx]?.duration || 0, t = audio.currentTime;
+  const frac = d ? Math.min(1, t / d) : 0;
+  $('fill').style.width = $('knob').style.left = (frac * 100) + '%';
+  $('miniProg').style.width = (frac * 100) + '%';
+  $('cur').textContent = fmt(t);
+  $('rem').textContent = '-' + fmt(d - t);
+  if (!describing) {
+    const pr = bookProgress(m, { idx, t });
+    $('booktime').textContent = `${human(pr.left)} left in book${m.sections.some(s => !s.file) ? ' (estimated)' : ''}`;
+  }
+  const fig = describing ? describing.fig : currentFigure();
+  $('describe').hidden = !fig;
+  $('describe').textContent = describing ? 'Back to the reading' : 'Describe this image';
+  if (describing) { $('line').textContent = ''; return; }
+  let k = sentences.findIndex(s => t < s.end + 0.3);
+  if (k < 0) k = sentences.length - 1;
+  const key = idx + ':' + k;
+  if (sentences[k] && $('line').dataset.k !== key) { $('line').dataset.k = key; $('line').textContent = sentences[k].text; }
+}
+
+// scrubber
+const track = $('track');
+const seekTo = e => { const r = track.getBoundingClientRect(); if (audio.duration) audio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audio.duration; };
+track.addEventListener('pointerdown', e => { track.setPointerCapture(e.pointerId); seekTo(e); });
+track.addEventListener('pointermove', e => { if (e.buttons) seekTo(e); });
+track.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') seekBy(-15); if (e.key === 'ArrowRight') seekBy(15); });
+
+// ---------- player & controls ----------
+function openPlayer() { $('player').classList.add('open'); render(); }
+function closePlayer() { $('player').classList.remove('open'); }
+$('close').onclick = closePlayer;
+$('mini').onclick = e => { if (e.target.closest('#miniPlay, #miniFwd')) return; openPlayer(); };
+$('miniPlay').onclick = () => (audio.paused ? play() : pause());
+$('miniFwd').onclick = () => seekBy(30);
+$('play').onclick = () => (audio.paused ? play() : pause());
+$('back').onclick = () => seekBy(-30);
+$('fwd').onclick = () => seekBy(30);
+$('prev').onclick = () => { if (audio.currentTime > 5) audio.currentTime = 0; else goChapter(prevReady(idx), !audio.paused); };
+$('next').onclick = () => goChapter(nextReady(idx), !audio.paused);
+
+// ---------- sheets ----------
+function openSheet(build) { $('sheetBody').replaceChildren(); build($('sheetBody')); $('sheet').classList.add('open'); $('scrim').classList.add('open'); }
+function closeSheet() { $('sheet').classList.remove('open'); $('scrim').classList.remove('open'); }
+$('scrim').onclick = closeSheet;
+function row(list, { n = '', text, sub, mark, d, cls = '', onclick }) {
+  const li = document.createElement('li'); li.className = cls;
+  const b = document.createElement('button');
+  const nn = document.createElement('span'); nn.className = 'n'; nn.textContent = n;
+  const x = document.createElement('span'); x.className = 'x'; x.textContent = text;
+  if (mark) { const mk = document.createElement('small'); mk.className = 'mk'; mk.textContent = mark; x.append(mk); }
+  if (sub) { const sm = document.createElement('small'); sm.textContent = sub; x.append(sm); }
+  const dd = document.createElement('span'); dd.className = 'd'; dd.textContent = d || '';
+  if (n !== '') b.append(nn);
+  b.append(x); if (d) b.append(dd);
+  b.onclick = onclick; li.append(b); list.append(li);
+}
+
+function chaptersSheet() {
+  openSheet(el => {
+    const ready_ = m.sections.filter(s => s.file).length;
+    el.innerHTML = `<h2>Chapters</h2><div class="sub">${ready_} of ${m.sections.length} ready${ready_ < m.sections.length ? ' · the rest are still being generated' : ''}</div>`;
+    const ul = document.createElement('ul'); ul.className = 'rows';
+    m.sections.forEach((s, i) => {
+      const mark = s.kind === 'notes' ? '◆ Notes' : notesFor(s).length ? '◆ Mother suggestion' : '';
+      row(ul, { n: i + 1, text: s.title, mark, d: s.file ? human(s.duration) : 'preparing', cls: (i === idx ? 'on ' : '') + (s.file ? '' : 'wait'),
+        onclick: () => { if (!s.file) return; closeSheet(); goChapter(i); } });
+    });
+    el.append(ul);
+    setTimeout(() => ul.children[idx]?.scrollIntoView({ block: 'center' }), 50);
+  });
+}
+$('chapBtn').onclick = chaptersSheet;
+$('chapBtnTop').onclick = chaptersSheet;
+
+$('speedBtn').onclick = () => openSheet(el => {
+  el.innerHTML = '<h2>Narration speed</h2>';
+  const ul = document.createElement('ul'); ul.className = 'rows';
+  for (const r of RATES) row(ul, { text: `${r}×`, cls: r === audio.playbackRate ? 'sel' : '', onclick: () => { setRate(r); closeSheet(); } });
+  el.append(ul);
+});
+
+function setSleepLabel() {
+  const on = sleepAt || sleepEndOfChapter;
+  $('sleepBtn').classList.toggle('on', !!on);
+  $('sleepVal').textContent = sleepEndOfChapter ? 'End of ch.' : sleepAt ? human((sleepAt - Date.now()) / 1000) : 'Sleep';
+}
+setInterval(setSleepLabel, 20000);
+function setSleep(mins) {
+  clearTimeout(sleepTimer); sleepAt = 0; sleepEndOfChapter = false;
+  if (mins === 'chapter') sleepEndOfChapter = true;
+  else if (mins) { sleepAt = Date.now() + mins * 60000; sleepTimer = setTimeout(() => { pause(); sleepAt = 0; setSleepLabel(); log('sleep timer: paused'); }, mins * 60000); }
+  setSleepLabel();
+}
+$('sleepBtn').onclick = () => openSheet(el => {
+  el.innerHTML = '<h2>Sleep timer</h2>';
+  const ul = document.createElement('ul'); ul.className = 'rows';
+  const cur = sleepEndOfChapter ? 'chapter' : sleepAt ? 'on' : 0;
+  for (const [label, v] of [['Off', 0], ['15 minutes', 15], ['30 minutes', 30], ['45 minutes', 45], ['60 minutes', 60], ['End of chapter', 'chapter']])
+    row(ul, { text: label, cls: v === cur ? 'sel' : '', onclick: () => { setSleep(v); closeSheet(); } });
+  el.append(ul);
+});
+
+// Bookmarks: position + the sentence being read + an optional note, per book.
+$('markBtn').onclick = () => openSheet(el => {
+  const marks = store.get(`jabber-marks-${book.id}`, []);
+  el.innerHTML = '<h2>Bookmarks</h2>';
+  const s = sentences.find(x => audio.currentTime < x.end + 0.3);
+  const ta = document.createElement('textarea'); ta.className = 'note-in'; ta.placeholder = 'Add a note (optional)';
+  const add = document.createElement('button'); add.className = 'primary'; add.textContent = `Bookmark ${fmt(audio.currentTime)} in this chapter`;
+  add.onclick = () => {
+    marks.push({ idx, t: audio.currentTime, chapter: m.sections[idx].title, text: s?.text || '', note: ta.value.trim(), date: new Date().toISOString() });
+    store.set(`jabber-marks-${book.id}`, marks); closeSheet(); log('bookmark added');
+  };
+  el.append(ta, add);
+  const ul = document.createElement('ul'); ul.className = 'rows'; ul.style.marginTop = '16px';
+  [...marks].reverse().forEach(mk => row(ul, { text: mk.note || mk.text || mk.chapter, sub: `${mk.chapter} · ${fmt(mk.t)}${mk.note && mk.text ? ' · “' + mk.text.slice(0, 80) + '…”' : ''}`,
+    onclick: () => { closeSheet(); if (ready(mk.idx)) { describing = null; select(mk.idx, mk.t); play(); } } }));
+  if (marks.length) el.append(ul);
+});
+
+$('openLog').onclick = () => openSheet(el => {
+  el.innerHTML = '<h2>Playback log</h2>';
+  const pre = document.createElement('pre'); pre.textContent = entries.slice(-150).join('\n');
+  const cp = document.createElement('button'); cp.className = 'primary'; cp.textContent = 'Copy log';
+  cp.onclick = async () => { try { await navigator.clipboard.writeText(entries.join('\n')); cp.textContent = 'Copied'; } catch { cp.textContent = 'Copy failed'; } };
+  el.append(pre, cp);
+});
+
+document.addEventListener('keydown', e => {
+  if (e.target.closest('textarea, input')) return;
+  if (e.key === ' ' && m) { e.preventDefault(); audio.paused ? play() : pause(); }
+  if (e.key === 'Escape') { closeSheet(); closePlayer(); }
+});
+
+log('--- open · home screen: ' + !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches));
+loadLibrary();
+</script>
 </body>
 </html>
