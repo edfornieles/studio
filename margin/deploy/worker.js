@@ -47,23 +47,57 @@ async function inbox(req, env, url) {
   return json(item, 201);
 }
 
+let keysCache = null, keysAt = 0;
+async function listenerFor(env, key) {
+  if (!key) return null;
+  if (env.ACCESS_KEY && key === env.ACCESS_KEY) return 'owner';
+  if (!keysCache || Date.now() - keysAt > 60000) { keysCache = (await env.FILES.get('library/_keys.json', 'json')) || {}; keysAt = Date.now(); }
+  const name = keysCache[key];
+  return name ? String(name).replace(/[^a-z0-9-]/gi, '').toLowerCase() || null : null;
+}
+
+// Listening progress, one JSON document per listener and book:
+// library/_progress/<listener>/<book>.json. The app merges it with what the
+// device has, so phone, Home Screen app and laptop resume at the same place.
+async function progress(req, env, path, listener) {
+  const book = path.split('/')[3]?.replace(/\.json$/, '');
+  if (!book || !/^[a-z0-9-]+$/i.test(book)) return json({ error: 'book' }, 400);
+  const key = `library/_progress/${listener}/${book}.json`;
+  if (req.method === 'GET') return json((await env.FILES.get(key, 'json')) || {});
+  if (req.method === 'PUT') {
+    const body = await req.text();
+    if (body.length > 400000) return json({ error: 'too large' }, 413);
+    try { JSON.parse(body); } catch { return json({ error: 'json' }, 400); }
+    await env.FILES.put(key, body);
+    return json({ ok: true });
+  }
+  return json({ error: 'method' }, 405);
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     let path = decodeURIComponent(url.pathname);
     const isInbox = path === '/library/_inbox' || path.startsWith('/library/_inbox/');
-    if (!isInbox && req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
+    const isProgress = path.startsWith('/library/_progress/');
+    if (!isInbox && !isProgress && req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
 
-    // Private library: books are copyrighted, so library/* needs the access
+    // Private library: books are copyrighted, so library/* needs an access
     // key, either as ?key= (kept in the Home Screen link) or a cookie.
+    // ACCESS_KEY (Worker secret) is the owner; extra listeners can be added
+    // in library/_keys.json ({"<key>": "<name>"}) with deploy.py --add-listener.
     let setCookie = null;
     if (path.startsWith('/library/')) {
       const given = url.searchParams.get('key') || (req.headers.get('cookie') || '').match(/(?:^|;\s*)jk=([^;]+)/)?.[1];
-      if (!env.ACCESS_KEY || given !== env.ACCESS_KEY) {
+      const listener = await listenerFor(env, given);
+      if (!listener) {
         return new Response('Private', { status: 401, headers: { 'content-type': 'text/plain', 'cache-control': 'no-store' } });
       }
-      if (url.searchParams.get('key')) setCookie = `jk=${env.ACCESS_KEY}; Path=/library/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax`;
+      if (url.searchParams.get('key')) setCookie = `jk=${given}; Path=/library/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax`;
       if (isInbox) return inbox(req, env, url);
+      if (isProgress) return progress(req, env, path, listener);
+      // Internal files (keys, inbox, progress) are never served directly.
+      if (path.startsWith('/library/_')) return new Response('Not found', { status: 404 });
     }
     if (path.endsWith('/')) path += 'index.html';
     // Keys are stored without the leading slash, e.g. "lab/index.html".

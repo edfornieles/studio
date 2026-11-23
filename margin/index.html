@@ -155,6 +155,9 @@ svg:not([fill]) { fill: currentColor; }
 .rows .on button { color: var(--accent); }
 .rows .on .n, .rows .on .d { color: var(--accent); }
 .rows .wait button { opacity: .45; cursor: default; }
+.rows .fin .d { color: var(--accent); }
+.title-card .bar { margin-top: 8px; }
+.rows .del { color: var(--soft); font-size: 13px; padding: 0 0 0 10px; flex: none; }
 .rows .sel button::after { content: "✓"; color: var(--accent); }
 .primary { width: 100%; margin-top: 14px; padding: 14px; border-radius: 12px; background: var(--ink); color: var(--bg); font-weight: 600; }
 .note-in { width: 100%; margin-top: 10px; font: 15px/1.45 var(--sans); padding: 10px 12px; border-radius: 10px; border: 1px solid var(--faint); background: var(--bg); color: var(--ink); min-height: 70px; resize: vertical; }
@@ -283,7 +286,97 @@ const ready = i => !!m?.sections[i]?.file;
 const nextReady = i => { for (let k = i + 1; k < m.sections.length; k++) if (ready(k)) return k; return -1; };
 const prevReady = i => { for (let k = i - 1; k >= 0; k--) if (ready(k)) return k; return -1; };
 const notesFor = s => (m.notes || []).filter(n => s.pages && n.page >= s.pages[0] && n.page <= s.pages[1]);
-const posOf = id => store.get(`jabber-pos-${id}`, null);
+// ---------- progress (kept on the device and synced to the private library) ----------
+// One document per book: { pos: {idx, t, at}, heard: {chapterId: furthest second},
+// done: {chapterId: true}, history: [{id, sid, from, to, start, end}], marks: [...], updated }
+// Devices merge their copies: newest position wins, the rest is combined.
+const progressCache = {};
+const rid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const blankProgress = () => ({ pos: null, heard: {}, done: {}, history: [], marks: [], updated: 0 });
+function localProgress(id) {
+  let p = store.get(`jabber-progress-${id}`, null);
+  if (!p) { // first run since syncing arrived: carry over the old per-device position and bookmarks
+    p = blankProgress();
+    const old = store.get(`jabber-pos-${id}`, null);
+    if (old) p.pos = { ...old, at: 1 };
+    p.marks = store.get(`jabber-marks-${id}`, []).map(mk => ({ id: rid(), ...mk }));
+  }
+  return p;
+}
+function mergeProgress(a, b) {
+  const out = blankProgress();
+  out.pos = !a.pos ? b.pos : !b.pos ? a.pos : (b.pos.at || 0) > (a.pos.at || 0) ? b.pos : a.pos;
+  for (const src of [a, b]) {
+    for (const [k, v] of Object.entries(src.heard || {})) out.heard[k] = Math.max(out.heard[k] || 0, v);
+    for (const k of Object.keys(src.done || {})) out.done[k] = true;
+  }
+  const byId = xs => { const mp = new Map(); for (const x of xs) if (x?.id) { const o = mp.get(x.id); mp.set(x.id, !o || (x.end || 0) >= (o.end || 0) || x.deleted ? { ...o, ...x } : o); } return [...mp.values()]; };
+  out.history = byId([...(a.history || []), ...(b.history || [])]).sort((x, y) => x.start - y.start).slice(-400);
+  out.marks = byId([...(a.marks || []), ...(b.marks || [])]).sort((x, y) => (x.date > y.date ? 1 : -1));
+  out.updated = Math.max(a.updated || 0, b.updated || 0);
+  return out;
+}
+const prog = id => (progressCache[id] ||= localProgress(id));
+const posOf = id => prog(id).pos;
+const listenedOf = id => prog(id).history.reduce((n, h) => n + Math.max(0, (h.to || 0) - (h.from || 0)), 0);
+function saveLocal(id) {
+  const p = prog(id);
+  // One entry per session id (a sync during a chapter hand-over can leave a stale copy behind).
+  const seen = new Map();
+  for (const h of p.history) { const o = seen.get(h.id); if (!o || (h.end || 0) >= (o.end || 0)) seen.set(h.id, h); }
+  if (seen.size !== p.history.length) p.history = [...seen.values()].sort((x, y) => x.start - y.start);
+  if (session) session = seen.get(session.id) || session;
+  p.updated = Date.now();
+  store.set(`jabber-progress-${id}`, p);
+}
+
+const syncing = new Set();
+let lastSync = 0;
+async function syncProgress(id, { adopt = false } = {}) {
+  if (!KEY || !id || syncing.has(id)) return;
+  syncing.add(id);
+  try {
+    const remote = await getJSON(`/library/_progress/${encodeURIComponent(id)}${q}`);
+    const before = prog(id).pos;
+    const merged = mergeProgress(prog(id), remote || {});
+    progressCache[id] = merged;
+    if (session) session = merged.history.find(h => h.id === session.id) || session; // keep tracking the live session
+    store.set(`jabber-progress-${id}`, merged);
+    await fetch(`/library/_progress/${encodeURIComponent(id)}${q}`, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify(merged) });
+    lastSync = Date.now();
+    // Another device moved on while this one was paused: resume from there.
+    if (adopt && book?.id === id && audio.paused && merged.pos && merged.pos !== before &&
+        (merged.pos.idx !== idx || Math.abs(merged.pos.t - audio.currentTime) > 5) && ready(merged.pos.idx)) {
+      log(`synced position from another device: ${m.sections[merged.pos.idx].id}@${fmt(merged.pos.t)}`);
+      select(merged.pos.idx, merged.pos.t);
+    }
+  } catch (e) { log('sync failed ' + e.message); }
+  finally { syncing.delete(id); }
+}
+
+// Listening sessions: a span of continuous playback in one chapter.
+let session = null;
+function trackPlayback() {
+  if (!book || describing || audio.paused) return;
+  const p = prog(book.id), sid = m.sections[idx].id, t = audio.currentTime, now = Date.now();
+  if (!session || session.sid !== sid || Math.abs(t - session.to) > 4) {
+    session = { id: rid(), sid, from: t, to: t, start: now, end: now };
+    p.history.push(session);
+    if (p.history.length > 400) p.history.splice(0, p.history.length - 400);
+  }
+  session.to = t; session.end = now;
+  p.heard[sid] = Math.max(p.heard[sid] || 0, t);
+  if (audio.duration && t >= audio.duration - 10) p.done[sid] = true;
+  p.pos = { idx, t, at: now };
+}
+function endSession() {
+  if (!book || !session) return;
+  const p = prog(book.id);
+  if (session.to - session.from < 3) p.history = p.history.filter(h => h.id !== session.id);
+  session = null;
+  saveLocal(book.id);
+}
+
 function bookProgress(man, pos) {
   const total = man.sections.reduce((n, s) => n + secLen(s), 0);
   let done = 0;
@@ -321,6 +414,7 @@ async function loadLibrary() {
     return;
   }
   await Promise.all(books.map(async b => { try { manifests[b.id] = await getJSON(lib(b.id) + 'manifest.json' + q); } catch {} }));
+  await Promise.all(books.map(b => syncProgress(b.id)));
   renderLibrary();
   $('addBtn').hidden = false;
   loadInbox();
@@ -354,7 +448,7 @@ function renderLibrary() {
     const pos = posOf(cont.id) || { idx: firstListenable(man), t: 0 };
     const pr = bookProgress(man, pos);
     const sec = man.sections[pos.idx] || man.sections[0];
-    meta.innerHTML = `<div class="t"></div><div class="c"></div><div class="bar"><i style="width:${(pr.frac * 100).toFixed(1)}%"></i></div><div class="left">${human(pr.left)} left${man.sections.some(s => !s.file) ? ' · still generating' : ''}</div>`;
+    meta.innerHTML = `<div class="t"></div><div class="c"></div><div class="bar"><i style="width:${(pr.frac * 100).toFixed(1)}%"></i></div><div class="left">${listenedOf(cont.id) > 60 ? human(listenedOf(cont.id)) + ' listened · ' : ''}${human(pr.left)} left${man.sections.some(s => !s.file) ? ' · still generating' : ''}</div>`;
     meta.querySelector('.t').textContent = shortTitle(man.title);
     meta.querySelector('.c').textContent = sec.title;
     const pb = document.createElement('span'); pb.className = 'round'; pb.innerHTML = I.play; pb.setAttribute('aria-label', 'Play');
@@ -370,7 +464,9 @@ function renderLibrary() {
     const cv = document.createElement('div'); cv.className = 'cover'; coverEl(b, cv);
     const t = document.createElement('div'); t.className = 't'; t.textContent = shortTitle(b.title);
     const a = document.createElement('div'); a.className = 'a'; a.textContent = b.author;
-    c.append(cv, t, a); c.onclick = () => openBook(b.id, { show: true });
+    const bm = manifests[b.id], bp = bm && posOf(b.id) ? bookProgress(bm, posOf(b.id)).frac : 0;
+    if (bp > 0) { const bar = document.createElement('div'); bar.className = 'bar'; bar.innerHTML = `<i style="width:${(bp * 100).toFixed(1)}%"></i>`; c.append(cv, bar, t, a); } else c.append(cv, t, a);
+    c.onclick = () => openBook(b.id, { show: true });
     grid.append(c);
   }
   body.append(lab2, grid);
@@ -496,6 +592,7 @@ function openBook(id, { show }) {
 }
 
 function select(i, t = 0) {
+  endSession();
   idx = i;
   const s = m.sections[i];
   sentences = s.sentences || [];
@@ -541,12 +638,14 @@ function setRate(r) {
 audio.addEventListener('ended', () => {
   if (describing) { endDescription(); return; }
   log(`ended ${m.sections[idx].id} (locked: ${document.hidden})`);
+  prog(book.id).done[m.sections[idx].id] = true; endSession(); syncProgress(book.id);
   if (sleepEndOfChapter) { sleepEndOfChapter = false; setSleepLabel(); wantPlaying = false; log('sleep: end of chapter'); return; }
   const n = nextReady(idx);
   if (n >= 0) { select(n); play(); log('hand-over → ' + m.sections[n].id); }
   else if (idx < m.sections.length - 1) { waitingForNext = true; wantPlaying = false; $('line').textContent = 'The next chapter is still being prepared. It will start as soon as it is ready.'; }
   else { wantPlaying = false; log('finished the book'); }
 });
+audio.addEventListener('pause', () => { if (book && !describing) { trackPlayback(); endSession(); syncProgress(book.id); } });
 for (const ev of ['playing', 'pause', 'stalled', 'error']) {
   audio.addEventListener(ev, () => {
     if (ev === 'error') log(`ERROR ${audio.error?.code} at ${m?.sections[idx]?.id}`);
@@ -559,7 +658,9 @@ audio.addEventListener('timeupdate', () => {
   if ('mediaSession' in navigator && audio.duration && navigator.mediaSession.setPositionState) {
     try { navigator.mediaSession.setPositionState({ duration: audio.duration, position: Math.min(audio.currentTime, audio.duration), playbackRate: audio.playbackRate }); } catch {}
   }
-  if (!describing && book && Date.now() - lastSave > 4000) { lastSave = Date.now(); store.set(`jabber-pos-${book.id}`, { idx, t: audio.currentTime }); }
+  trackPlayback();
+  if (!describing && book && Date.now() - lastSave > 4000) { lastSave = Date.now(); saveLocal(book.id); }
+  if (!describing && book && !audio.paused && Date.now() - lastSync > 60000) syncProgress(book.id);
 });
 audio.addEventListener('loadedmetadata', render);
 
@@ -586,7 +687,11 @@ async function refresh() {
   } catch (e) { log('refresh failed ' + e.message); }
 }
 setInterval(refresh, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); render(); loadInbox(); } });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) { if (book) { saveLocal(book.id); syncProgress(book.id); } return; }
+  refresh(); render(); loadInbox();
+  if (book) syncProgress(book.id, { adopt: true }).then(renderLibrary);
+});
 
 // ---------- image descriptions ----------
 function currentFigure() {
@@ -693,12 +798,15 @@ function row(list, { n = '', text, sub, mark, d, cls = '', onclick }) {
 
 function chaptersSheet() {
   openSheet(el => {
-    const ready_ = m.sections.filter(s => s.file).length;
-    el.innerHTML = `<h2>Chapters</h2><div class="sub">${ready_} of ${m.sections.length} ready${ready_ < m.sections.length ? ' · the rest are still being generated' : ''}</div>`;
+    const ready_ = m.sections.filter(s => s.file).length, p = prog(book.id);
+    const fin = m.sections.filter(s => p.done[s.id]).length;
+    el.innerHTML = `<h2>Chapters</h2><div class="sub">${fin} of ${m.sections.length} finished · ${human(listenedOf(book.id))} listened${ready_ < m.sections.length ? ` · ${ready_} ready, the rest still being generated` : ''}</div>`;
     const ul = document.createElement('ul'); ul.className = 'rows';
     m.sections.forEach((s, i) => {
       const mark = s.kind === 'notes' ? '◆ Notes' : notesFor(s).length ? '◆ Mother suggestion' : '';
-      row(ul, { n: i + 1, text: s.title, mark, d: s.file ? human(s.duration) : 'preparing', cls: (i === idx ? 'on ' : '') + (s.file ? '' : 'wait'),
+      const heard = p.heard[s.id] || 0;
+      const d = !s.file ? 'preparing' : p.done[s.id] ? '✓ ' + human(s.duration) : heard > 15 ? human(s.duration - heard) + ' left' : human(s.duration);
+      row(ul, { n: i + 1, text: s.title, mark, d, cls: (i === idx ? 'on ' : '') + (s.file ? '' : 'wait') + (p.done[s.id] ? ' fin' : ''),
         onclick: () => { if (!s.file) return; closeSheet(); goChapter(i); } });
     });
     el.append(ul);
@@ -735,22 +843,46 @@ $('sleepBtn').onclick = () => openSheet(el => {
   el.append(ul);
 });
 
-// Bookmarks: position + the sentence being read + an optional note, per book.
+// Bookmarks & history: synced with the rest of the progress record.
+const when = ts => {
+  const d = new Date(ts), today = new Date();
+  const day = d.toDateString() === today.toDateString() ? 'Today' : d.toDateString() === new Date(today - 864e5).toDateString() ? 'Yesterday' : d.toLocaleDateString([], { day: 'numeric', month: 'short' });
+  return `${day} ${d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+};
+const titleOf = sid => m.sections.find(s => s.id === sid)?.title || sid;
 $('markBtn').onclick = () => openSheet(el => {
-  const marks = store.get(`jabber-marks-${book.id}`, []);
-  el.innerHTML = '<h2>Bookmarks</h2>';
+  const p = prog(book.id);
+  el.innerHTML = '<h2>Bookmarks & history</h2>';
   const s = sentences.find(x => audio.currentTime < x.end + 0.3);
   const ta = document.createElement('textarea'); ta.className = 'note-in'; ta.placeholder = 'Add a note (optional)';
   const add = document.createElement('button'); add.className = 'primary'; add.textContent = `Bookmark ${fmt(audio.currentTime)} in this chapter`;
   add.onclick = () => {
-    marks.push({ idx, t: audio.currentTime, chapter: m.sections[idx].title, text: s?.text || '', note: ta.value.trim(), date: new Date().toISOString() });
-    store.set(`jabber-marks-${book.id}`, marks); closeSheet(); log('bookmark added');
+    p.marks.push({ id: rid(), idx, sid: m.sections[idx].id, t: audio.currentTime, chapter: m.sections[idx].title, text: s?.text || '', note: ta.value.trim(), date: new Date().toISOString() });
+    saveLocal(book.id); syncProgress(book.id); closeSheet(); log('bookmark added');
   };
   el.append(ta, add);
-  const ul = document.createElement('ul'); ul.className = 'rows'; ul.style.marginTop = '16px';
-  [...marks].reverse().forEach(mk => row(ul, { text: mk.note || mk.text || mk.chapter, sub: `${mk.chapter} · ${fmt(mk.t)}${mk.note && mk.text ? ' · “' + mk.text.slice(0, 80) + '…”' : ''}`,
-    onclick: () => { closeSheet(); if (ready(mk.idx)) { describing = null; select(mk.idx, mk.t); play(); } } }));
-  if (marks.length) el.append(ul);
+  const marks = p.marks.filter(mk => !mk.deleted);
+  if (marks.length) {
+    const h = document.createElement('div'); h.className = 'label'; h.textContent = 'Bookmarks'; el.append(h);
+    const ul = document.createElement('ul'); ul.className = 'rows';
+    [...marks].reverse().forEach(mk => {
+      row(ul, { text: mk.note || mk.text || mk.chapter, sub: `${mk.chapter} · ${fmt(mk.t)}${mk.note && mk.text ? ' · “' + mk.text.slice(0, 80) + '…”' : ''}`,
+        onclick: () => { closeSheet(); const i = mk.sid ? m.sections.findIndex(x => x.id === mk.sid) : mk.idx; if (ready(i)) { describing = null; select(i, mk.t); play(); } } });
+      const del = document.createElement('button'); del.className = 'del'; del.textContent = 'Delete'; del.setAttribute('aria-label', 'Delete bookmark');
+      del.onclick = e => { e.stopPropagation(); mk.deleted = true; mk.end = Date.now(); saveLocal(book.id); syncProgress(book.id); del.closest('li').remove(); };
+      ul.lastChild.querySelector('button').append(del);
+    });
+    el.append(ul);
+  }
+  saveLocal(book.id);
+  const hist = prog(book.id).history.filter(x => x.to - x.from >= 5).slice(-40).reverse();
+  if (hist.length) {
+    const h = document.createElement('div'); h.className = 'label'; h.textContent = `History · ${human(listenedOf(book.id))} listened`; el.append(h);
+    const ul = document.createElement('ul'); ul.className = 'rows';
+    hist.forEach(x => row(ul, { text: titleOf(x.sid), sub: `${when(x.start)} · ${fmt(x.from)}–${fmt(x.to)}`,
+      onclick: () => { closeSheet(); const i = m.sections.findIndex(sec => sec.id === x.sid); if (ready(i)) { describing = null; select(i, x.to); play(); } } }));
+    el.append(ul);
+  }
 });
 
 $('openLog').onclick = () => openSheet(el => {

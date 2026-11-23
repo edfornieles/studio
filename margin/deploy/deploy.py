@@ -75,6 +75,20 @@ def main():
         must(call("PUT", f"{API}/workers/scripts/{NAME}/secrets", json.dumps({"name": "ACCESS_KEY", "text": key, "type": "secret_text"}).encode()), "set key")
         print("ACCESS_KEY", key)
 
+    if "--add-listener" in sys.argv:  # a separate link (and separate progress) for someone else
+        import secrets
+        name = sys.argv[sys.argv.index("--add-listener") + 1].lower()
+        req = urllib.request.Request(f"{API}/storage/kv/namespaces/{ns}/values/library%2F_keys.json")
+        req.add_header("Authorization", f"Bearer {TOKEN}")
+        try:
+            keys = json.loads(urllib.request.urlopen(req).read())
+        except urllib.error.HTTPError:
+            keys = {}
+        key = "".join(secrets.choice("ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789") for _ in range(24))
+        keys[key] = name
+        must(call("PUT", f"{API}/storage/kv/namespaces/{ns}/values/library%2F_keys.json", json.dumps(keys).encode(), "application/json"), "keys")
+        print(f"link for {name}: https://{HOST}/?key={key}")
+
     if "--domain" in sys.argv:
         res = call("PUT", f"{API}/workers/domains", json.dumps({"hostname": HOST, "service": NAME, "zone_id": ZONE, "environment": "production"}).encode())
         print("custom domain:", "ok" if res.get("success") else res.get("errors"))
