@@ -57,7 +57,7 @@ export function pageLines(items, view = [0, 0, 612, 792]) {
     let cur = null;
     for (const it of r.items) {
       const gap = cur ? it.x - cur.x1 : 0;
-      if (cur && gap <= Math.max(cur.maxSize, it.size) * 1.6) {
+      if (cur && gap <= Math.max(cur.maxSize, it.size) * 0.95) {
         if (gap > Math.min(cur.maxSize, it.size) * 0.12 && !/\s$/.test(cur.text) && !/^\s/.test(it.str)) cur.text += ' ';
         cur.text += it.str;
         cur.x1 = Math.max(cur.x1, it.x + it.w);
@@ -75,17 +75,12 @@ export function pageLines(items, view = [0, 0, 612, 792]) {
     s.text = s.text.replace(/\s+/g, ' ').trim();
   }
 
-  // 3. Column detection.
-  const mid = W / 2, tol = W * 0.03;
-  let nL = 0, nR = 0;
-  for (const s of segs) {
-    s.col = s.x1 <= mid + tol && s.x0 < mid ? 'L' : s.x0 >= mid - tol ? 'R' : 'S';
-    if (s.col === 'L') nL++; else if (s.col === 'R') nR++;
-  }
-  const twoCol = nL >= 3 && nR >= 3 && nL + nR >= 0.6 * segs.length;
-
+  // 3. Column detection: find vertical gutters (x ranges that almost no
+  // segment covers) between blocks of text. Works for any number of columns
+  // anywhere on the page, e.g. two columns on the left of a landscape page.
+  const columns = findColumns(segs);
   let ordered = [];
-  if (!twoCol) {
+  if (columns.length < 2) {
     // Single column: re-join the segments of each row into one line.
     let line = null;
     for (const s of segs) {
@@ -100,13 +95,17 @@ export function pageLines(items, view = [0, 0, 612, 792]) {
       }
     }
   } else {
-    // Two columns: read left column then right, block by block; full-width
-    // lines (titles, wide captions) separate the blocks.
-    let L = [], R = [];
-    const flush = () => { ordered.push(...L, ...R); L = []; R = []; };
+    // Read each column top to bottom, block by block; lines that cross a
+    // gutter (titles, wide captions) separate the blocks.
+    for (const s of segs) {
+      const c = columns.findIndex(([a, b]) => s.x0 >= a - 2 && s.x0 < b);
+      s.col = c >= 0 && s.x1 <= columns[c][1] + Math.max(6, s.size) ? 'C' + c : 'S';
+    }
+    let block = columns.map(() => []);
+    const flush = () => { for (const col of block) ordered.push(...col); block = columns.map(() => []); };
     for (const s of segs) {
       if (s.col === 'S') { flush(); ordered.push(s); }
-      else (s.col === 'L' ? L : R).push(s);
+      else block[+s.col.slice(1)].push(s);
     }
     flush();
   }
@@ -115,6 +114,36 @@ export function pageLines(items, view = [0, 0, 612, 792]) {
     const yr = s.y / H;
     return { text: s.text, x0: s.x0, x1: s.x1, y: s.y, yr, size: s.size, col: s.col, edge: yr > 0.9 ? 'top' : yr < 0.1 ? 'bottom' : null };
   });
+}
+
+
+// Returns column x-ranges [[x0, x1], ...] or [] when the text is one column.
+function findColumns(segs) {
+  if (segs.length < 8) return [];
+  const body = median(segs.map(s => s.size)) || 10;
+  const minX = Math.min(...segs.map(s => s.x0)), maxX = Math.max(...segs.map(s => s.x1));
+  const step = 2, n = Math.ceil((maxX - minX) / step) + 1;
+  const cover = new Array(n).fill(0);
+  for (const s of segs) for (let i = Math.floor((s.x0 - minX) / step); i < Math.ceil((s.x1 - minX) / step); i++) cover[i]++;
+  const allowed = Math.max(1, Math.floor(segs.length * 0.04)); // a few spanning titles may cross a gutter
+  const minGap = Math.max(8, body * 0.9);
+  const cuts = [];
+  for (let i = 0; i < n;) {
+    if (cover[i] > allowed) { i++; continue; }
+    let j = i;
+    while (j < n && cover[j] <= allowed) j++;
+    const a = minX + i * step, b = minX + j * step;
+    if (b - a >= minGap && a > minX + body && b < maxX - body) cuts.push((a + b) / 2);
+    i = j;
+  }
+  if (!cuts.length) return [];
+  const edges = [minX - 1, ...cuts, maxX + 1];
+  const cols = [];
+  for (let k = 0; k < edges.length - 1; k++) cols.push([edges[k], edges[k + 1]]);
+  // Each column needs real text in it, not a stray page number or label.
+  const counts = cols.map(([a, b]) => segs.filter(s => s.x0 >= a && s.x0 < b && s.text.length > 3).length);
+  if (counts.filter(c => c >= 3).length < 2) return [];
+  return cols;
 }
 
 const PAGE_NUMBER = /^\s*(?:page\s*)?(?:\d{1,4}|[ivxlcdm]{1,6})\s*$/i;
@@ -153,7 +182,7 @@ export function linesToText(lines) {
   const bodyLines = lines.filter(isBody);
 
   const typW = {}, colLeft = {};
-  for (const col of ['L', 'R', 'S']) {
+  for (const col of new Set(lines.map(l => l.col))) {
     const ls = bodyLines.filter(l => l.col === col);
     if (!ls.length) continue;
     typW[col] = median(ls.map(l => l.x1 - l.x0));

@@ -11,6 +11,17 @@ export default {
     if (req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
     const url = new URL(req.url);
     let path = decodeURIComponent(url.pathname);
+
+    // Private library: books are copyrighted, so library/* needs the access
+    // key, either as ?key= (kept in the Home Screen link) or a cookie.
+    let setCookie = null;
+    if (path.startsWith('/library/')) {
+      const given = url.searchParams.get('key') || (req.headers.get('cookie') || '').match(/(?:^|;\s*)jk=([^;]+)/)?.[1];
+      if (!env.ACCESS_KEY || given !== env.ACCESS_KEY) {
+        return new Response('Private', { status: 401, headers: { 'content-type': 'text/plain', 'cache-control': 'no-store' } });
+      }
+      if (url.searchParams.get('key')) setCookie = `jk=${env.ACCESS_KEY}; Path=/library/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax`;
+    }
     if (path.endsWith('/')) path += 'index.html';
     // Keys are stored without the leading slash, e.g. "lab/index.html".
     const key = path.replace(/^\/+/, '');
@@ -26,8 +37,11 @@ export default {
       'accept-ranges': 'bytes',
       'x-content-type-options': 'nosniff',
       'referrer-policy': 'same-origin',
-      'cache-control': ext === 'mp3' || ext === 'png' ? 'public, max-age=86400' : 'no-cache',
+      'cache-control': path.startsWith('/library/') ? (ext === 'mp3' ? 'private, max-age=86400' : 'no-cache, private')
+        : ext === 'mp3' || ext === 'png' ? 'public, max-age=86400' : 'no-cache',
+      'x-robots-tag': 'noindex',
     });
+    if (setCookie) headers.set('set-cookie', setCookie);
     const size = body.byteLength;
     const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.get('range') || '');
     if (m && (m[1] || m[2])) {

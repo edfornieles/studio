@@ -17,7 +17,7 @@ NAME = "jabber"
 HOST = "jabber.edfornieles.com"
 API = f"https://api.cloudflare.com/client/v4/accounts/{ACCOUNT}"
 ROOT = Path(__file__).resolve().parent.parent
-INCLUDE = ["index.html", "app.css", "manifest.webmanifest", "js", "lab", "docs"]
+INCLUDE = ["index.html", "app.css", "manifest.webmanifest", "js", "lab", "listen", "docs"]
 TOKEN = os.environ.get("CLOUDFLARE_API_TOKEN", "proxy-injected")
 
 
@@ -58,7 +58,8 @@ def main():
         print("uploaded", key, f.stat().st_size)
 
     meta = {"main_module": "worker.js", "compatibility_date": "2026-11-01",
-            "bindings": [{"type": "kv_namespace", "name": "FILES", "namespace_id": ns}]}
+            "bindings": [{"type": "kv_namespace", "name": "FILES", "namespace_id": ns}],
+            "keep_bindings": ["secret_text"]}  # keep ACCESS_KEY set via the secrets API
     boundary = "----jabberdeploy"
     body = (f"--{boundary}\r\nContent-Disposition: form-data; name=\"metadata\"\r\nContent-Type: application/json\r\n\r\n{json.dumps(meta)}\r\n"
             f"--{boundary}\r\nContent-Disposition: form-data; name=\"worker.js\"; filename=\"worker.js\"\r\nContent-Type: application/javascript+module\r\n\r\n").encode()
@@ -66,6 +67,12 @@ def main():
     must(call("PUT", f"{API}/workers/scripts/{NAME}", body, f"multipart/form-data; boundary={boundary}"), "upload worker")
     print("worker deployed")
     call("POST", f"{API}/workers/scripts/{NAME}/subdomain", json.dumps({"enabled": True}).encode())
+
+    if "--set-key" in sys.argv:  # new private-library access key; prints it once
+        import secrets
+        key = secrets.token_urlsafe(18)
+        must(call("PUT", f"{API}/workers/scripts/{NAME}/secrets", json.dumps({"name": "ACCESS_KEY", "text": key, "type": "secret_text"}).encode()), "set key")
+        print("ACCESS_KEY", key)
 
     if "--domain" in sys.argv:
         res = call("PUT", f"{API}/workers/domains", json.dumps({"hostname": HOST, "service": NAME, "zone_id": ZONE, "environment": "production"}).encode())

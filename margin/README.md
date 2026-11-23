@@ -84,6 +84,18 @@ python3 deploy/deploy.py --domain   # also (re)attach jabber.edfornieles.com
 ```
 Needs a Cloudflare API token with Workers Scripts, Workers KV and Workers Routes edit. In Claude Code cloud sessions the token is injected by the network proxy; elsewhere set `CLOUDFLARE_API_TOKEN`. (Cloudflare Pages direct upload doesn't work from a proxied cloud session, because the proxy overwrites the upload key that Pages uses.)
 
+## Books (private): `/listen/`
+`https://jabber.edfornieles.com/listen/?book=<id>&key=<access key>` plays a pre-generated book. Everything under `/library/` needs the access key (a Worker secret, set with `python3 deploy/deploy.py --set-key`). Book text and audio are never committed to git.
+
+Make a book:
+```sh
+npm i pdfjs-dist@3.11.174      # once, in a scratch folder; run the next command from there
+node /path/to/margin/generator/pdf-to-book.mjs book.pdf book.json --from Preface --skip "Appendix,Credits"
+python margin/generator/run-book.py book.json --id <id> --work <folder> --worker 0 --workers 2 &
+python margin/generator/run-book.py book.json --id <id> --work <folder> --worker 1 --workers 2 &
+```
+`pdf-to-book.mjs` uses the PDF's bookmarks as sections and keeps sticky-note annotations as notes. `run-book.py` narrates a notes section first, then the `--first` sections, then sections containing `--priority-pages`, then the rest. It uploads each section as it finishes, so you can listen while the rest generates, and finished sections are skipped on a re-run.
+
 ## Tests
 From `margin/`:
 ```sh
