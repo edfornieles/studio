@@ -63,7 +63,7 @@ Open `http://localhost:8000/margin/` on a desktop. The app uses ES modules, so i
 `lab/index.html` is a standalone page that answers one question: does pre-generated narration keep playing on an iPhone with the screen locked, including the hand-over from one section file to the next?
 
 - One `<audio>` element, one MP3 per section, Media Session lock-screen controls (play/pause, ±15/30 s, seek, previous/next). No Web Audio.
-- Three sections of Thoreau's *Walking* (1862, public domain), about 4–5 minutes each, generated with Kyutai Pocket TTS (voice `alba`). The manifest has per-sentence timings, so the current sentence is shown.
+- Three sections of Thoreau's *Walking* (1862, public domain), about 3–4 minutes each (9.6 minutes in total), generated with Kyutai Pocket TTS (voice `alba`). The manifest has per-sentence timings, so the current sentence is shown.
 - A persistent log records every play, pause, stall, error and hand-over, plus a verdict each time you return to the page ("back after 14:10 · audio advanced 14:05 · kept playing ✓"). Copy it from "Test instructions and log".
 
 ### Regenerate or make new audio (`generator/`)

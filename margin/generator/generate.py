@@ -31,7 +31,7 @@ import numpy as np
 
 ABBR = re.compile(r"^(?:Mr|Mrs|Ms|Dr|Prof|St|Sr|Jr|vs|etc|e\.g|i\.e|cf|al|ed|eds|vol|no|pp?|ch|fig|op|cit|ibid|ca|c)\.$", re.I)
 BOUNDARY = re.compile(r"[.!?…]+[\"'”’)\]]*(?=\s+[\"'“‘(\[]?[A-Z0-9])")
-MAX_LEN = 300
+MAX_LEN = 200  # Pocket TTS warns above ~50 tokens per chunk
 
 
 def sentences(text):
