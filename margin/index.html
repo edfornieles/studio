@@ -293,14 +293,28 @@ async function getJSON(url) {
 
 async function loadLibrary() {
   const body = $('libbody');
-  if (!KEY) { body.innerHTML = '<p class="empty">Open your personal link once to unlock your library on this device.</p>'; return; }
+  if (!KEY) { unlockForm(body, 'Your library is private. Paste your personal Jabber link (or its key) to unlock it on this device.'); return; }
   try { books = (await getJSON('/library/index.json' + q)).books || []; }
-  catch (e) { body.innerHTML = `<p class="empty">${e.message === 'private' ? 'This link’s key isn’t valid any more.' : 'Couldn’t load your library (' + e.message + ').'}</p>`; return; }
+  catch (e) {
+    if (e.message === 'private') { store.set('jabber-key', ''); unlockForm(body, 'That key isn’t valid. Paste your current personal link.'); }
+    else body.innerHTML = `<p class="empty">Couldn’t load your library (${e.message}).</p>`;
+    return;
+  }
   await Promise.all(books.map(async b => { try { manifests[b.id] = await getJSON(lib(b.id) + 'manifest.json' + q); } catch {} }));
   renderLibrary();
   const last = store.get('jabber-last', null);
   const pick = books.find(b => b.id === last) || books[0];
   if (pick && manifests[pick.id] && !book) openBook(pick.id, { show: false });
+}
+
+function unlockForm(body, msg) {
+  body.innerHTML = '<p class="empty" style="margin-top:12vh"></p><textarea class="note-in" placeholder="https://jabber.edfornieles.com/?key=…" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea><button class="primary">Unlock</button>';
+  body.querySelector('p').textContent = msg;
+  body.querySelector('button').onclick = () => {
+    const v = body.querySelector('textarea').value.trim();
+    const k = (v.match(/[?&]key=([^&#\s]+)/) || [])[1] || v;
+    if (k) location.replace('/?key=' + encodeURIComponent(decodeURIComponent(k)));
+  };
 }
 
 function renderLibrary() {
