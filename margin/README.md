@@ -74,13 +74,15 @@ python3 -m venv .venv
 ```
 `book.json` is `{"title", "author", "sections": [{"title", "text"}]}`. Needs `ffmpeg`. Pocket TTS runs on an ordinary CPU at about twice real-time speed (this container) and is free. Voices are listed in the [Pocket TTS README](https://github.com/kyutai-labs/pocket-tts); `--voice` also accepts a `.wav` sample you're authorised to clone.
 
-## Deploy: jabber.edfornieles.com (Cloudflare Pages)
-1. Cloudflare dashboard › Workers & Pages › Create › Pages › Connect to Git › `edfornieles/studio`.
-2. Production branch: `claude/margin-prototype-as2x2q` for now. Framework preset: None. Build command: *(empty)*. Build output directory: `margin`.
-3. After the first deploy: Custom domains › add `jabber.edfornieles.com`. The DNS record is created automatically because the domain is already on Cloudflare. This doesn't touch the main site.
-4. Test page: `https://jabber.edfornieles.com/lab/`
+## Deploy: jabber.edfornieles.com
+Live at **https://jabber.edfornieles.com/** (test page: **/lab/**). It runs as a Cloudflare Worker named `jabber` that serves the files from a KV namespace (`jabber-files`) and supports HTTP Range requests, which iOS needs for audio. The main edfornieles.com site isn't touched.
 
-`_headers` sets the MP3 content type and caching.
+Redeploy after changes (from `margin/`):
+```sh
+python3 deploy/deploy.py            # re-upload files and worker
+python3 deploy/deploy.py --domain   # also (re)attach jabber.edfornieles.com
+```
+Needs a Cloudflare API token with Workers Scripts, Workers KV and Workers Routes edit. In Claude Code cloud sessions the token is injected by the network proxy; elsewhere set `CLOUDFLARE_API_TOKEN`. (Cloudflare Pages direct upload doesn't work from a proxied cloud session, because the proxy overwrites the upload key that Pages uses.)
 
 ## Tests
 From `margin/`:
