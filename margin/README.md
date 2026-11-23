@@ -8,13 +8,33 @@ Prototype handoff for Claude Code. Uploaded 23 November 2026.
 ## Product goal
 A personal audiobook-style research library: upload PDFs, listen with an appealing voice, save position, annotate passages, and interrupt playback to discuss the text. Designed primarily for iPhone Safari / home-screen use.
 
-## Current implementation
-- Single-page HTML/CSS/JS application, no build setup.
-- Uses PDF.js from a CDN to extract text from user-selected PDFs.
-- Stores extracted page text, reading positions and research annotations in IndexedDB on the local device.
-- Browser Web Speech API (`speechSynthesis`) attempts narration; pause/resume, page navigation and speed controls.
-- "Mother · Water cooler" is only a preferred *approximate* device voice; **no genuine Water Cooler voice asset or model is included**.
-- Text notes and saved page markers can be exported.
+## Current implementation (0.3)
+A static web app with no build step. Files:
+
+| File | Role |
+|---|---|
+| `index.html`, `app.css` | UI: library, now-listening reader with sentence highlighting, notebook, search, settings and diagnostics, fixed mini-player |
+| `js/app.js` | Controller: library, player loop, positions, marks, search, export, Media Session |
+| `js/narrator.js` | Narration engines: `DeviceVoice` (Web Speech) and `RemoteVoice` (narrator server through one `<audio>` element) |
+| `js/extract.js` | Layout-aware text assembly: two columns, running headers and page numbers, de-hyphenation, paragraphs, headings, footnotes |
+| `js/pdf.js` | Loads PDF.js 3.11.174 from cdnjs and runs extraction |
+| `js/chunks.js` | Sentence chunker with character offsets (aware of abbreviations and initials) |
+| `js/store.js` | IndexedDB (`books`, original `files`, `audio` cache), with an in-memory fallback. Migrates 0.2 libraries in place |
+| `js/diagnostics.js` | Event log and environment report ("Copy diagnostics report") |
+| `docs/tts-backend.md` | Contract for the narrator server |
+
+What changed from 0.2:
+- **Positions are saved per sentence** (page plus chunk) and restored after a reload. Pausing no longer throws you back to the start of the page.
+- **iPhone playback hardening** (still to be confirmed on a real device):
+  - Sets `navigator.audioSession.type = "playback"` and plays a silent `<audio>` inside the tap, so iOS treats the page's audio as media. The aim is that the ring/silent switch no longer mutes speech.
+  - The first `speak()` call now runs synchronously inside the tap.
+  - Only calls `cancel()` when something is actually queued (on iOS, `cancel()` straight before `speak()` can swallow the utterance).
+  - Keeps a reference to the current utterance so Safari can't garbage-collect it mid-sentence.
+  - Watchdogs catch "never started" (reported as `silent`) and "finished but `onend` never fired".
+- **Narrator server engine:** prefetches the next two sentences, caches audio in IndexedDB, pauses mid-sentence, and supports Media Session lock-screen play/pause/next/previous.
+- **Diagnostics panel:** a test tone through an HTMLAudioElement, a device-voice test, a narrator-server test, plus an environment summary and a copyable log.
+- **Notebook:** marks are tied to the exact sentence. "Pause & discuss" quotes the sentence and keeps your words separate from the source, then "Continue listening" picks up where you were. "Copy passage" copies the passage with its page reference. Exports are Markdown with citations, and a JSON backup that holds marks and positions but no book text.
+- **Search** within a book. Tap a sentence to listen from it. The original PDF is kept on the device so its text can be re-read when extraction improves.
 
 ## Confirmed limitations / critical priorities
 1. **Playback is not confirmed to work on iPhone.** Earlier downloaded versions failed to play for the user. Hosting removes the file-preview restriction, but doesn't solve iOS speech/background limitations. Diagnose on real iPhone Safari and replace Web Speech API with a robust audio player and an authorised TTS service for generated/streamed or cached narration. Handle lock screen, route changes, interruptions, seek and resume.
@@ -37,4 +57,19 @@ From the repository root:
 ```sh
 python3 -m http.server 8000
 ```
-Open `http://localhost:8000/margin/` on a desktop. For iPhone tests, deploy to an HTTPS host.
+Open `http://localhost:8000/margin/` on a desktop. The app uses ES modules, so it must be served over HTTP; opening it as a `file://` path or in a Files preview won't work. For iPhone tests, deploy `margin/` to an HTTPS host and open it in Safari.
+
+## Tests
+From `margin/`:
+```sh
+node --test tests/unit.test.js   # chunker and PDF layout (no browser)
+node tests/e2e.mjs               # headless Chromium: real two-column PDF upload, playback with
+                                 # simulated speech, pause/reload/resume, notes, search,
+                                 # narrator server against a mocked endpoint (needs network for cdnjs)
+```
+
+## Still open
+- **Confirm on a real iPhone.** Open Playback diagnostics, run tests 1–3 and copy the report. The headless tests simulate `speechSynthesis` and can't prove real iOS audio.
+- Choose a TTS provider and stand up the endpoint in `docs/tts-backend.md`. Lock-screen and background listening depend on it.
+- OCR for scanned pages; more extraction work on complex layouts (three columns, tables, graphic scores).
+- Accounts and sync; offline service worker; importing JSON backups.

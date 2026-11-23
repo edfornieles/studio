@@ -1,0 +1,9 @@
+{
+  "name": "Margin — Listening Library",
+  "short_name": "Margin",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#171815",
+  "theme_color": "#171815"
+}

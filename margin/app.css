@@ -1,0 +1,83 @@
+:root {
+  --bg: #171815; --panel: #242520; --panel-2: #343329; --ink: #eae7df; --ink-2: #dad7ce;
+  --muted: #aaa99f; --line: #45473c; --accent: #dbc998; --accent-2: #e8c891; --danger: #e08a7e;
+  --reading: #191a17; --now: #4a4632;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { background: var(--bg); color: var(--ink); -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--bg); }
+main { max-width: 760px; margin: auto; padding: calc(20px + env(safe-area-inset-top)) 16px calc(110px + env(safe-area-inset-bottom)); }
+header { display: flex; align-items: baseline; justify-content: space-between; padding-bottom: 18px; border-bottom: 1px solid var(--line); }
+h1 { font-size: 32px; letter-spacing: -2px; margin: 0; }
+h1 .dot { color: var(--accent); }
+h2 { font-size: 26px; letter-spacing: -.8px; margin: 6px 0 8px; overflow-wrap: anywhere; }
+h3 { font-size: 18px; margin: 0 0 8px; }
+.muted, small { color: var(--muted); font-size: 13px; line-height: 1.5; }
+.kicker { color: var(--accent-2); text-transform: uppercase; letter-spacing: 2px; font-size: 11px; font-weight: 700; }
+.spaced { margin-top: 22px; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 17px; padding: 18px; margin: 17px 0; }
+.small-status { font-size: 12px; color: #ccc4ad; margin: 6px 0; }
+code { font-size: 12px; }
+
+.book { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid var(--line); border-radius: 13px; margin: 9px 0; cursor: pointer; width: 100%; text-align: left; background: transparent; font-weight: 400; }
+.book.active { border-color: var(--accent); background: var(--panel-2); }
+.cover { background: linear-gradient(112deg, #484842 32%, #c66c77 32%); border-radius: 3px; width: 44px; height: 62px; display: grid; place-items: center; font-size: 10px; color: #111; font-weight: 700; flex: none; }
+.book .info { flex: 1; min-width: 0; }
+.book strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+button { background: #34362f; color: #e9e6da; border: 1px solid #777666; border-radius: 11px; padding: 11px 14px; font: 600 15px/1.1 inherit; font-family: inherit; cursor: pointer; touch-action: manipulation; }
+button:disabled { opacity: .4; }
+button.ghost { background: transparent; border-color: var(--line); }
+button.danger { color: var(--danger); }
+.primary { background: var(--accent); border-color: var(--accent); color: #171815; font-size: 18px; padding: 15px 24px; }
+.controls { display: flex; gap: 10px; justify-content: center; align-items: center; margin: 14px 0; }
+.controls button { min-width: 74px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+select, textarea, input[type=text], input[type=url], input[type=search] { background: #151612; border: 1px solid #717163; border-radius: 9px; padding: 10px; color: #eee; font-size: 16px; width: 100%; font-family: inherit; }
+textarea { min-height: 84px; margin-top: 10px; }
+.row { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+.field { display: block; flex: 1 1 160px; color: var(--muted); font-size: 13px; margin-top: 8px; }
+.field select, .field input { margin-top: 4px; }
+#status { color: #d2c290; min-height: 22px; font-size: 13px; text-align: center; }
+
+.reading { position: relative; font: 18px/1.65 Georgia, serif; max-height: 46vh; overflow: auto; white-space: pre-wrap; background: var(--reading); padding: 16px; border-radius: 12px; color: var(--ink-2); overscroll-behavior: contain; }
+.reading .c { cursor: pointer; border-radius: 3px; }
+.reading .c:hover { background: #2a2b25; }
+.reading .c.now { background: var(--now); color: #fff7e0; box-shadow: 0 0 0 2px var(--now); }
+.reading .c.marked { text-decoration: underline dotted var(--accent); text-underline-offset: 4px; }
+.book-tools { justify-content: flex-end; }
+.book-tools button { font-size: 13px; padding: 8px 10px; }
+
+.file { display: block; border-style: dashed; border-color: #99917a; cursor: pointer; }
+.file strong { display: block; margin-bottom: 4px; }
+input[type=file] { width: 100%; max-width: 100%; margin-top: 10px; color: var(--muted); }
+
+.note-box { display: none; margin-top: 12px; }
+.note-box.open { display: block; }
+.quote { margin: 8px 0 0; padding: 8px 12px; border-left: 3px solid var(--accent); font: 16px/1.5 Georgia, serif; color: var(--ink-2); background: var(--reading); border-radius: 0 8px 8px 0; }
+.quote:empty { display: none; }
+.mark { padding: 12px 0; border-bottom: 1px solid var(--line); }
+.mark .meta { font-size: 12px; color: var(--accent-2); letter-spacing: .5px; }
+.mark .yours { margin: 8px 0 0; white-space: pre-wrap; }
+.mark .yours::before { content: "You: "; color: var(--muted); }
+.mark .row button { font-size: 13px; padding: 7px 10px; }
+
+#results .hit { display: block; width: 100%; text-align: left; margin-top: 8px; font-weight: 400; background: transparent; border-color: var(--line); line-height: 1.45; }
+#results mark { background: var(--now); color: #fff; }
+
+details summary { cursor: pointer; font-weight: 600; margin-top: 16px; }
+.tips { padding-left: 18px; }
+.tips li { margin: 6px 0; }
+#log { background: #10110e; color: #bdb9a8; font-size: 11px; max-height: 220px; overflow: auto; padding: 10px; border-radius: 8px; white-space: pre-wrap; word-break: break-word; }
+a { color: var(--accent-2); }
+.foot { padding: 24px 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+
+.miniplayer { position: fixed; left: 0; right: 0; bottom: 0; display: flex; gap: 10px; align-items: center; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); background: rgba(23, 24, 21, .94); border-top: 1px solid var(--line); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.miniplayer button { font-size: 20px; padding: 10px 14px; min-width: 50px; }
+.miniplayer .primary { padding: 10px 18px; }
+.mini-info { flex: 1; min-width: 0; }
+.mini-info strong, .mini-info small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mini-info strong { font-size: 14px; }
+@media (min-width: 700px) { .miniplayer { justify-content: center; } .mini-info { flex: 0 1 320px; } }
