@@ -117,6 +117,14 @@ python generator/run-book.py book.json ... --figures figures.json        # adds 
 ```
 Pages with sizeable pictures or very little text are rendered and described by Claude: a one-line cue that the narrator reads in place ("There's an image here: … Tap Describe if you'd like to hear more about it.") and a fuller description, generated as its own clip. In the player, **Describe this image** appears for 90 s after each cue, plays the description, then returns to the same point. Sections generated before figures existed are regenerated automatically on the next `--figures` run.
 
+## Adding links and PDFs from the phone
+The **+** button in the Library takes a link (an article, or a link to a PDF) or an uploaded PDF (up to 24 MB). Items go into a private inbox (`/library/_inbox`, handled by the Worker) and show under **Being prepared**. A narrator machine turns them into books:
+```sh
+python generator/process-inbox.py --pdfjs-dir <folder with node_modules/pdfjs-dist>      # keeps watching
+python generator/process-inbox.py --pdfjs-dir ... --once --engine fish --fish-voice ...   # e.g. on the laptop
+```
+PDFs are split by their bookmarks, or into parts of about 15 minutes. Links are fetched and the article text extracted (trafilatura); pages that need a login or JavaScript fail with a message on the phone. Remove a book with `python generator/remove-book.py <id>`.
+
 ## Tests
 From `margin/`:
 ```sh

@@ -39,6 +39,25 @@ svg:not([fill]) { fill: currentColor; }
 .home { max-width: 640px; margin: 0 auto; padding: calc(18px + env(safe-area-inset-top)) 20px calc(110px + env(safe-area-inset-bottom)); }
 .brand { font-size: 13px; font-weight: 600; letter-spacing: .02em; color: var(--soft); }
 .home h1 { font-size: 34px; line-height: 1.1; letter-spacing: -.02em; margin: 6px 0 22px; font-weight: 700; }
+.head { display: flex; align-items: center; justify-content: space-between; }
+.add { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--bg); display: grid; place-items: center; margin-bottom: 16px; }
+.add svg { width: 20px; height: 20px; }
+.prep { display: flex; gap: 12px; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--faint); }
+.prep .ico { width: 44px; height: 44px; border-radius: 8px; background: var(--raised); display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--soft); flex: none; }
+.prep .meta { flex: 1; min-width: 0; }
+.prep .t { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prep .c { font-size: 13px; color: var(--soft); }
+.prep .c.fail { color: var(--accent); }
+.prep .x { color: var(--soft); font-size: 13px; padding: 8px; }
+.prep .spin { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 6px; animation: pulse 1.4s ease-in-out infinite; vertical-align: 1px; }
+@keyframes pulse { 50% { opacity: .25; } }
+.field { width: 100%; font: 16px/1.4 var(--sans); padding: 12px; border-radius: 10px; border: 1px solid var(--faint); background: var(--bg); color: var(--ink); }
+.or { text-align: center; color: var(--soft); font-size: 13px; margin: 18px 0 4px; }
+.filebtn { display: block; width: 100%; margin-top: 10px; padding: 14px; border-radius: 12px; border: 1px dashed var(--soft); text-align: center; font-weight: 600; cursor: pointer; }
+.filebtn input { display: none; }
+.upbar { height: 4px; background: var(--faint); border-radius: 4px; margin-top: 12px; overflow: hidden; }
+.upbar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .2s; }
+.msg { font-size: 13px; color: var(--soft); margin-top: 10px; min-height: 18px; }
 .label { font-size: 13px; font-weight: 600; color: var(--soft); text-transform: uppercase; letter-spacing: .06em; margin: 30px 0 12px; }
 
 .cover { aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: var(--raised); flex: none; position: relative; }
@@ -146,7 +165,8 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
 
 <main class="home" id="home">
   <div class="brand">Jabber</div>
-  <h1>Library</h1>
+  <div class="head"><h1>Library</h1><button class="add" id="addBtn" aria-label="Add a link or PDF" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
+  <div id="inboxBox"></div>
   <div id="libbody"></div>
   <div class="foot"><button id="openLog">Playback log</button> · <a href="/lab/">Lock-screen test</a></div>
 </main>
@@ -302,6 +322,8 @@ async function loadLibrary() {
   }
   await Promise.all(books.map(async b => { try { manifests[b.id] = await getJSON(lib(b.id) + 'manifest.json' + q); } catch {} }));
   renderLibrary();
+  $('addBtn').hidden = false;
+  loadInbox();
   const last = store.get('jabber-last', null);
   const pick = books.find(b => b.id === last) || books[0];
   if (pick && manifests[pick.id] && !book) openBook(pick.id, { show: false });
@@ -358,6 +380,99 @@ function firstListenable(man) {
   const i = man.sections.findIndex(s => s.file && s.kind !== 'notes');
   return i >= 0 ? i : Math.max(0, man.sections.findIndex(s => s.file));
 }
+
+// ---------- add links & PDFs (inbox) ----------
+let inboxItems = [], inboxTimer = 0;
+async function loadInbox() {
+  if (!KEY) return;
+  let listed;
+  try { listed = (await getJSON('/library/_inbox' + q)).items || []; } catch { return; }
+  const recent = inboxItems.filter(i => !listed.some(l => l.id === i.id) && i.status === 'queued' && Date.now() - i.created < 120000);
+  inboxItems = [...recent, ...listed];
+  renderInbox();
+  clearTimeout(inboxTimer);
+  if (inboxItems.length) inboxTimer = setTimeout(async () => {
+    const before = inboxItems.map(i => i.id + i.status + i.detail).join();
+    await loadInbox();
+    const now = inboxItems.map(i => i.id + i.status + i.detail).join();
+    if (before !== now) reloadBooks();
+  }, 15000);
+}
+async function reloadBooks() {
+  try {
+    books = (await getJSON('/library/index.json' + q)).books || [];
+    await Promise.all(books.map(async b => { if (!manifests[b.id] || b.ready !== manifests[b.id].sections.filter(s => s.file).length) { try { manifests[b.id] = await getJSON(lib(b.id) + 'manifest.json' + q); } catch {} } }));
+    renderLibrary();
+  } catch {}
+}
+function renderInbox() {
+  const box = $('inboxBox');
+  box.replaceChildren();
+  if (!inboxItems.length) return;
+  const lab = document.createElement('div'); lab.className = 'label'; lab.textContent = 'Being prepared';
+  box.append(lab);
+  for (const it of inboxItems) {
+    const row = document.createElement('div'); row.className = 'prep';
+    const ico = document.createElement('div'); ico.className = 'ico'; ico.textContent = it.kind === 'pdf' ? 'PDF' : 'LINK';
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const t = document.createElement('div'); t.className = 't'; t.textContent = it.title || it.name;
+    const c = document.createElement('div'); c.className = 'c' + (it.status === 'failed' ? ' fail' : '');
+    if (it.status !== 'failed') { const sp = document.createElement('span'); sp.className = 'spin'; c.append(sp); }
+    c.append(it.status === 'failed' ? 'Couldn’t add: ' + it.detail : it.detail);
+    meta.append(t, c);
+    row.append(ico, meta);
+    if (it.status === 'queued' || it.status === 'failed') {
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = 'Remove';
+      x.onclick = async () => { await fetch('/library/_inbox/' + it.id + q, { method: 'DELETE' }); loadInbox(); };
+      row.append(x);
+    }
+    box.append(row);
+  }
+}
+// Storage listings can lag a minute behind, so show a new item right away.
+function addLocal(item) {
+  closeSheet();
+  if (item?.id && !inboxItems.some(i => i.id === item.id)) inboxItems.unshift(item);
+  renderInbox();
+  clearTimeout(inboxTimer);
+  inboxTimer = setTimeout(loadInbox, 15000);
+}
+$('addBtn').onclick = () => openSheet(el => {
+  el.innerHTML = `<h2>Add to your library</h2><div class="sub">Paste a link to an article or a PDF, or upload a PDF. It's turned into an audiobook in the background; chapters appear as they're ready.</div>
+    <input class="field" id="linkIn" type="url" inputmode="url" placeholder="https://…" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="primary" id="linkGo">Add link</button>
+    <div class="or">or</div>
+    <label class="filebtn">Upload a PDF<input type="file" id="fileIn" accept="application/pdf,.pdf"></label>
+    <div class="upbar" id="upbar" hidden><i></i></div>
+    <div class="msg" id="addMsg"></div>`;
+  const msg = el.querySelector('#addMsg');
+  el.querySelector('#linkGo').onclick = async () => {
+    const v = el.querySelector('#linkIn').value.trim();
+    if (!v) return;
+    msg.textContent = 'Adding…';
+    const r = await fetch('/library/_inbox' + q, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url: /^https?:/i.test(v) ? v : 'https://' + v }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { msg.textContent = d.error || 'Couldn’t add that link.'; return; }
+    addLocal(d);
+  };
+  el.querySelector('#fileIn').onchange = e => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    if (f.size > 24 * 1024 * 1024) { msg.textContent = 'That PDF is over 24 MB, too big for now.'; return; }
+    const bar = el.querySelector('#upbar'); bar.hidden = false;
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', '/library/_inbox' + q + (q ? '&' : '?') + 'name=' + encodeURIComponent(f.name));
+    xhr.setRequestHeader('content-type', 'application/pdf');
+    xhr.upload.onprogress = ev => { if (ev.lengthComputable) bar.firstChild.style.width = (ev.loaded / ev.total * 100) + '%'; msg.textContent = `Uploading ${f.name}…`; };
+    xhr.onload = () => {
+      if (xhr.status === 201) { let d = {}; try { d = JSON.parse(xhr.responseText); } catch {} addLocal(d); }
+      else { let d = {}; try { d = JSON.parse(xhr.responseText); } catch {} msg.textContent = d.error || 'Upload failed (' + xhr.status + ').'; }
+    };
+    xhr.onerror = () => { msg.textContent = 'Upload failed. Check your connection.'; };
+    xhr.send(f);
+  };
+  setTimeout(() => el.querySelector('#linkIn').focus(), 300);
+});
 
 // ---------- open / select ----------
 function openBook(id, { show }) {
@@ -469,7 +584,7 @@ async function refresh() {
   } catch (e) { log('refresh failed ' + e.message); }
 }
 setInterval(refresh, 60000);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); render(); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { refresh(); render(); loadInbox(); } });
 
 // ---------- image descriptions ----------
 function currentFigure() {

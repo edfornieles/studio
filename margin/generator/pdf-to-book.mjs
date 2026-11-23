@@ -64,6 +64,14 @@ let starts = flat
   .sort((a, b) => a.page - b.page);
 // One section per start page (first title wins).
 starts = starts.filter((s, i) => i === 0 || s.page !== starts[i - 1].page);
+// No bookmarks: split into parts of roughly 15 minutes of narration.
+if (!starts.length) {
+  let chars = Infinity, n = 0;
+  for (let p = 1; p <= doc.numPages; p++) {
+    if (chars > 13000 && pages[p - 1].trim()) { starts.push({ title: `Part ${++n}`, page: p, depth: 0 }); chars = 0; }
+    chars += pages[p - 1].length;
+  }
+}
 const firstIdx = from ? Math.max(0, starts.findIndex(s => s.title.toLowerCase().startsWith(from.toLowerCase()))) : 0;
 
 // Small caps often extract as "PrefaCe" / "DoUglas": fix words whose
@@ -98,7 +106,7 @@ for (let i = firstIdx; i < starts.length; i++) {
 }
 
 const book = {
-  title: info.Title || input.replace(/^.*\//, '').replace(/\.pdf$/i, ''),
+  title: info.Title || (rest.includes('--no-filename-title') ? '' : input.replace(/^.*\//, '').replace(/\.pdf$/i, '')),
   author: info.Author || '',
   pageCount: doc.numPages,
   sections,

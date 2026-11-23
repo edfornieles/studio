@@ -38,7 +38,7 @@ def kv_get(ns, key):
         raise
 
 
-def notes_section(notes):
+def notes_section(notes, title="Notes in this PDF"):
     """Narrated summary of PDF sticky notes (e.g. reading suggestions)."""
     if not notes:
         return None
@@ -47,8 +47,8 @@ def notes_section(notes):
         t = re.sub(r"\s*Status:.*$", "", n["text"], flags=re.S)       # drop bookkeeping lines
         t = re.sub(r"^M(\d\d) \| [^|]+\| ", lambda m: f"Suggestion {int(m.group(1))}. ", t)
         parts.append(t.replace("\n\n", "\n\n").strip())
-    return {"title": "Mackenzie's suggestions for Mother", "pages": None, "kind": "notes",
-            "text": "Mackenzie's suggestions for Mother. Six readings from this book, with notes.\n\n" + "\n\n".join(parts)}
+    return {"title": title, "pages": None, "kind": "notes",
+            "text": f"{title}. {len(parts)} note{'s' if len(parts) != 1 else ''} from this book.\n\n" + "\n\n".join(parts)}
 
 
 CUE = "There's an image here: {short}."
@@ -134,7 +134,7 @@ def main():
     book = json.loads(Path(args.book).read_text())
     work = Path(args.work); work.mkdir(parents=True, exist_ok=True)
     sections = list(book["sections"])
-    ns_sec = notes_section(book.get("notes"))
+    ns_sec = notes_section(book.get("notes"), book.get("notesTitle", "Notes in this PDF"))
     if ns_sec:
         sections.insert(0, ns_sec)
     ns = namespace()

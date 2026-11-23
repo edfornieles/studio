@@ -6,11 +6,53 @@ const TYPES = {
   png: 'image/png', jpg: 'image/jpeg', pdf: 'application/pdf', md: 'text/markdown; charset=utf-8', svg: 'image/svg+xml',
 };
 
+const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
+const MAX_PDF = 24 * 1024 * 1024; // KV values are limited to 25 MB
+
+// Inbox: links and PDFs waiting to be turned into books. Items live in KV as
+// library/_inbox/<id>.json (+ <id>.pdf). generator/process-inbox.py picks them
+// up, updates their status, and publishes the finished book to the library.
+async function inbox(req, env, url) {
+  const prefix = 'library/_inbox/';
+  const id = url.pathname.split('/')[3];
+  if (req.method === 'GET') {
+    const list = await env.FILES.list({ prefix });
+    const items = await Promise.all(list.keys.filter(k => k.name.endsWith('.json')).map(k => env.FILES.get(k.name, 'json')));
+    return json({ items: items.filter(Boolean).sort((a, b) => b.created - a.created) });
+  }
+  if (req.method === 'DELETE' && id) {
+    await env.FILES.delete(prefix + id + '.json');
+    await env.FILES.delete(prefix + id + '.pdf');
+    return json({ ok: true });
+  }
+  if (req.method !== 'POST') return json({ error: 'method' }, 405);
+  const newId = Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const type = req.headers.get('content-type') || '';
+  let item;
+  if (type.startsWith('application/pdf')) {
+    const body = await req.arrayBuffer();
+    if (body.byteLength > MAX_PDF) return json({ error: 'That PDF is over 24 MB, too big for now.' }, 413);
+    if (new TextDecoder().decode(body.slice(0, 5)) !== '%PDF-') return json({ error: 'That file is not a PDF.' }, 400);
+    await env.FILES.put(prefix + newId + '.pdf', body);
+    item = { id: newId, kind: 'pdf', name: (url.searchParams.get('name') || 'Untitled.pdf').slice(0, 200), size: body.byteLength };
+  } else {
+    const { url: link } = await req.json().catch(() => ({}));
+    let u;
+    try { u = new URL(link); } catch { return json({ error: 'That doesn’t look like a link.' }, 400); }
+    if (!/^https?:$/.test(u.protocol)) return json({ error: 'Only http(s) links work.' }, 400);
+    item = { id: newId, kind: 'url', name: u.hostname.replace(/^www\./, '') + u.pathname.replace(/\/$/, ''), url: u.href };
+  }
+  Object.assign(item, { status: 'queued', detail: 'Waiting for the narrator', created: Date.now() });
+  await env.FILES.put(prefix + newId + '.json', JSON.stringify(item));
+  return json(item, 201);
+}
+
 export default {
   async fetch(req, env) {
-    if (req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
     const url = new URL(req.url);
     let path = decodeURIComponent(url.pathname);
+    const isInbox = path === '/library/_inbox' || path.startsWith('/library/_inbox/');
+    if (!isInbox && req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
 
     // Private library: books are copyrighted, so library/* needs the access
     // key, either as ?key= (kept in the Home Screen link) or a cookie.
@@ -21,6 +63,7 @@ export default {
         return new Response('Private', { status: 401, headers: { 'content-type': 'text/plain', 'cache-control': 'no-store' } });
       }
       if (url.searchParams.get('key')) setCookie = `jk=${env.ACCESS_KEY}; Path=/library/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax`;
+      if (isInbox) return inbox(req, env, url);
     }
     if (path.endsWith('/')) path += 'index.html';
     // Keys are stored without the leading slash, e.g. "lab/index.html".
