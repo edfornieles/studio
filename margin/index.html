@@ -270,6 +270,7 @@ let books = [], manifests = {};
 let book = null, m = null, idx = 0, sentences = [];
 let wantPlaying = false, waitingForNext = false, describing = null, lastSave = 0;
 let sleepAt = 0, sleepEndOfChapter = false, sleepTimer = 0;
+let pendingSeek = null;
 
 // ---------- log ----------
 let entries = store.get('jabber-log', []);
@@ -598,9 +599,16 @@ function select(i, t = 0) {
   idx = i;
   const s = m.sections[i];
   sentences = s.sentences || [];
-  audio.src = lib(book.id) + s.file + q;
+  // "#t=" makes Safari start loading at the saved spot; a seek on load alone is unreliable on iPhone.
+  audio.src = lib(book.id) + s.file + q + (t > 1 ? `#t=${t.toFixed(1)}` : '');
   audio.playbackRate = audio.defaultPlaybackRate = store.get('jabber-rate', 1);
-  if (t) { const seek = () => { audio.currentTime = t; audio.removeEventListener('loadedmetadata', seek); }; audio.addEventListener('loadedmetadata', seek); }
+  if (t > 1) {
+    pendingSeek = t;
+    const seek = () => { if (pendingSeek != null && Math.abs(audio.currentTime - pendingSeek) > 2) { try { audio.currentTime = pendingSeek; } catch {} } };
+    audio.addEventListener('loadedmetadata', seek, { once: true });
+    audio.addEventListener('canplay', seek, { once: true });
+    audio.addEventListener('playing', () => { seek(); pendingSeek = null; }, { once: true });
+  } else pendingSeek = null;
   $('chap').textContent = s.title;
   $('miniTitle').textContent = shortTitle(m.title);
   $('miniChap').textContent = s.title;
@@ -652,6 +660,22 @@ audio.addEventListener('ended', () => {
   else { wantPlaying = false; log('finished the book'); }
 });
 audio.addEventListener('pause', () => { if (book && !describing) { trackPlayback(); endSession(); syncProgress(book.id); } });
+// Watchdog: "playing" but the clock isn't moving (seen on iPhone after resuming
+// mid-chapter). Reload the file at the current spot and carry on.
+let lastTick = { t: -1, at: 0 }, revived = 0;
+setInterval(() => {
+  if (audio.paused || !m || describing) { lastTick = { t: audio.currentTime, at: Date.now() }; return; }
+  if (Math.abs(audio.currentTime - lastTick.t) > 0.2) { lastTick = { t: audio.currentTime, at: Date.now() }; return; }
+  if (Date.now() - lastTick.at > 8000 && Date.now() - revived > 20000) {
+    revived = Date.now();
+    const t = audio.currentTime;
+    log(`stalled at ${m.sections[idx].id}@${fmt(t)} (readyState ${audio.readyState}, network ${audio.networkState}); reloading`);
+    setNotice('Reconnecting…');
+    select(idx, t);
+    play();
+  }
+}, 2000);
+
 // Show what the audio is doing, so silence is never a mystery.
 let noticeTimer = 0;
 function setNotice(t) { const el = $('notice'); el.textContent = t; el.hidden = !t; $('miniChap').textContent = t || m?.sections[idx]?.title || ''; }
