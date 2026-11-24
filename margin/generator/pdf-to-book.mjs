@@ -64,8 +64,33 @@ let starts = flat
   .sort((a, b) => a.page - b.page);
 // One section per start page (first title wins).
 starts = starts.filter((s, i) => i === 0 || s.page !== starts[i - 1].page);
-// No bookmarks: split into parts of roughly 15 minutes of narration.
+// No bookmarks: use numbered section headings ("1. Introduction") if the
+// document has them (articles, papers); otherwise parts of ~15 minutes.
+// The reference list (and anything after it) isn't worth hearing. Its heading may run
+// straight into the first entry: "References Agamben, Giorgio. 2009 …".
+const STOP = /^(?:\d{1,2}\.?\s+)?(references|bibliography|works cited|literature cited)(?:$|\s+\p{Lu}[\p{L}'’-]+,)/iu;
+let headingSections = null;
 if (!starts.length) {
+  const paras = [];
+  pages.forEach((t, i) => t.split(/\n\n+/).forEach(x => { if (x.trim()) paras.push({ page: i + 1, text: x.trim() }); }));
+  const isHeading = x => /^\d{1,2}\.\s+\p{Lu}/u.test(x) && x.length < 160 && !/[.:;,]$/.test(x) && x.split(/\s+/).length <= 20;
+  const marks = paras.map((x, i) => (isHeading(x.text) ? i : -1)).filter(i => i >= 0);
+  const nums = marks.map(i => parseInt(paras[i].text, 10));
+  // Need headings numbered upwards (1, 2, 3 …), not stray numbered list items.
+  if (marks.length >= 2 && nums[0] <= 1 && nums.every((n, k) => k === 0 || n === nums[k - 1] + 1)) {
+    headingSections = [];
+    const bounds = [{ title: 'Title and abstract', at: 0 }, ...marks.map(i => ({ title: paras[i].text.replace(/\s+/g, ' '), at: i }))];
+    let stopAt = paras.findIndex((x, i) => i > marks[marks.length - 1] && STOP.test(x.text));
+    if (stopAt < 0) stopAt = paras.length;
+    bounds.forEach((b, k) => {
+      const end = Math.min(k + 1 < bounds.length ? bounds[k + 1].at : paras.length, stopAt);
+      const chunk = paras.slice(b.at, end).filter((x, j) => !(j === 0 && k > 0)); // heading becomes the spoken title
+      if (!chunk.length && k > 0) return;
+      headingSections.push({ title: b.title, chunk });
+    });
+  }
+}
+if (!starts.length && !headingSections) {
   let chars = Infinity, n = 0;
   for (let p = 1; p <= doc.numPages; p++) {
     if (chars > 13000 && pages[p - 1].trim()) { starts.push({ title: `Part ${++n}`, page: p, depth: 0 }); chars = 0; }
@@ -90,6 +115,20 @@ const clean = t => t.split(/\n\n+/).map(p => fixCaps(p.trim())).filter(p => p &&
 
 const sections = [];
 let carry = '';
+if (headingSections) {
+  for (const h of headingSections) {
+    const parts = [];
+    for (const x of h.chunk) {
+      const t = clean(x.text);
+      if (!t) continue;
+      if (parts.length && parts[parts.length - 1].page === x.page) parts[parts.length - 1].text += '\n\n' + t;
+      else parts.push({ page: x.page, text: t });
+    }
+    if (!parts.length) continue;
+    const body = parts.map(x => x.text).join('\n\n');
+    sections.push({ title: h.title, pages: [parts[0].page, parts[parts.length - 1].page], intro: h.title + '.', parts, text: h.title + '.\n\n' + body });
+  }
+}
 for (let i = firstIdx; i < starts.length; i++) {
   const s = starts[i];
   if (skip.some(k => s.title.toLowerCase().startsWith(k))) continue;
@@ -105,9 +144,28 @@ for (let i = firstIdx; i < starts.length; i++) {
   carry = '';
 }
 
+// Metadata titles are often junk ("Title", "Microsoft Word - draft.docx"); then
+// read the title (largest type on page 1) and the line after it (authors).
+const junkTitle = t => !t || t.trim().length < 4 || /^(title|untitled|document|slide \d+)$/i.test(t.trim()) || /microsoft word|\.docx?$|\.pdf$|^untitled/i.test(t);
+let title = info.Title, author = info.Author || '';
+if (junkTitle(title)) {
+  author = '';
+  title = '';
+  const first = lines[0] || [];
+  if (first.length) {
+    const max = Math.max(...first.map(l => l.size));
+    const k = first.findIndex(l => l.size >= max * 0.95);
+    let j = k;
+    const parts = [];
+    while (j < first.length && first[j].size >= max * 0.9 && parts.join(' ').length < 220) parts.push(first[j++].text);
+    title = parts.join(' ').replace(/\s+/g, ' ').replace(/(\p{L})- (\p{Ll})/gu, '$1$2').trim();
+    const next = first[j];
+    if (next && next.text.length < 120 && !/^abstract/i.test(next.text)) author = next.text.replace(/\s+/g, ' ').trim();
+  }
+}
 const book = {
-  title: info.Title || (rest.includes('--no-filename-title') ? '' : input.replace(/^.*\//, '').replace(/\.pdf$/i, '')),
-  author: info.Author || '',
+  title: title || (rest.includes('--no-filename-title') ? '' : input.replace(/^.*\//, '').replace(/\.pdf$/i, '')),
+  author,
   pageCount: doc.numPages,
   sections,
   notes,

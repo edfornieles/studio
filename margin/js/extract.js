@@ -168,6 +168,7 @@ export function removeRunningLines(pages) {
   }));
 }
 
+const NUM_HEADING = /^\d{1,2}(?:\.\d{1,2})*\.?\s+\p{Lu}[^.!?]{0,90}$/u;
 const ENDS_SENTENCE = /[.!?:"”’)]$/;
 
 function joinLine(a, b) {
@@ -217,6 +218,10 @@ export function linesToText(lines) {
       else {
         if (sameCol && p.y > l.y && p.y - l.y > lead * 1.5) brk = true;
         else if (sameCol && p.y < l.y) brk = ENDS_SENTENCE.test(p.text);
+        // Numbered headings set in bold at body size ("1. Introduction"): a short
+        // line of their own, so they become their own paragraph.
+        const short = x => x.x1 - x.x0 < (typW[x.col] || typW.S || Infinity) * 0.75;
+        if (!brk && ((NUM_HEADING.test(l.text) && short(l)) || (NUM_HEADING.test(p.text) && short(p) && para.text === p.text))) brk = true;
         if (!brk && ENDS_SENTENCE.test(p.text)) {
           if (p.x1 - p.x0 < (typW[p.col] || typW.S || Infinity) * 0.8) brk = true;
           else if (colLeft[l.col] !== undefined && l.x0 > colLeft[l.col] + l.size * 0.8) brk = true;

@@ -95,7 +95,7 @@ def pdf_book(pdf_path, name, work, args):
                    capture_output=True, text=True)
     book = json.loads(out.read_text())
     meta_title = (book.get("title") or "").strip()
-    if not meta_title or len(meta_title) < 4 or re.search(r"untitled|microsoft word|\.docx?$|\.pdf$", meta_title, re.I):
+    if not meta_title or len(meta_title) < 4 or re.search(r"^title$|untitled|microsoft word|\.docx?$|\.pdf$", meta_title, re.I):
         book["title"] = re.sub(r"\.pdf$", "", name, flags=re.I).replace("_", " ").strip() or "Untitled"
     if len(book["sections"]) == 1 and book["sections"][0]["title"].startswith("Part 1"):  # one part: use the book's title
         sec = book["sections"][0]
