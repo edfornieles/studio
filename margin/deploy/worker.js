@@ -74,13 +74,39 @@ async function progress(req, env, path, listener) {
   return json({ error: 'method' }, 405);
 }
 
+// Settings (owner only). The Anthropic API key is write-only: it is checked
+// against Anthropic, stored in KV under library/_secrets/ (never served), and
+// only "set / last 4 characters" is ever returned. A Worker secret named
+// ANTHROPIC_API_KEY, if present, takes precedence.
+const SECRET_KEY = 'library/_secrets/anthropic_api_key';
+async function anthropicKey(env) {
+  return env.ANTHROPIC_API_KEY || (await env.FILES.get(SECRET_KEY)) || null;
+}
+async function settings(req, env, listener) {
+  if (listener !== 'owner') return json({ error: 'Only the library owner can change settings.' }, 403);
+  if (req.method === 'GET') {
+    const k = await anthropicKey(env);
+    return json({ anthropic: k ? { set: true, last4: k.slice(-4), source: env.ANTHROPIC_API_KEY ? 'worker secret' : 'settings' } : { set: false } });
+  }
+  if (req.method === 'DELETE') { await env.FILES.delete(SECRET_KEY); return json({ ok: true }); }
+  if (req.method !== 'PUT') return json({ error: 'method' }, 405);
+  const { anthropicKey: k } = await req.json().catch(() => ({}));
+  if (!k || !/^sk-ant-[A-Za-z0-9_-]{20,}$/.test(k.trim())) return json({ error: 'That doesn’t look like an Anthropic API key (it starts with sk-ant-).' }, 400);
+  const check = await fetch('https://api.anthropic.com/v1/models?limit=1', { headers: { 'x-api-key': k.trim(), 'anthropic-version': '2023-06-01' } });
+  if (check.status === 401 || check.status === 403) return json({ error: 'Anthropic rejected that key. Check it was copied in full and is active.' }, 400);
+  if (!check.ok) return json({ error: `Couldn’t verify the key right now (Anthropic returned ${check.status}). Try again in a minute.` }, 502);
+  await env.FILES.put(SECRET_KEY, k.trim());
+  return json({ ok: true, last4: k.trim().slice(-4) });
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     let path = decodeURIComponent(url.pathname);
     const isInbox = path === '/library/_inbox' || path.startsWith('/library/_inbox/');
     const isProgress = path.startsWith('/library/_progress/');
-    if (!isInbox && !isProgress && req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
+    const isSettings = path === '/library/_settings';
+    if (!isInbox && !isProgress && !isSettings && req.method !== 'GET' && req.method !== 'HEAD') return new Response('Method not allowed', { status: 405 });
 
     // Private library: books are copyrighted, so library/* needs an access
     // key, either as ?key= (kept in the Home Screen link) or a cookie.
@@ -96,6 +122,7 @@ export default {
       if (url.searchParams.get('key')) setCookie = `jk=${given}; Path=/library/; Max-Age=31536000; Secure; HttpOnly; SameSite=Lax`;
       if (isInbox) return inbox(req, env, url);
       if (isProgress) return progress(req, env, path, listener);
+      if (isSettings) return settings(req, env, listener);
       // Internal files (keys, inbox, progress) are never served directly.
       if (path.startsWith('/library/_')) return new Response('Not found', { status: 404 });
     }

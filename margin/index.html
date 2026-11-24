@@ -172,7 +172,7 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
   <div class="head"><h1>Library</h1><button class="add" id="addBtn" aria-label="Add a link or PDF" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div>
   <div id="inboxBox"></div>
   <div id="libbody"></div>
-  <div class="foot"><button id="openLog">Playback log</button> · <a href="/lab/">Lock-screen test</a></div>
+  <div class="foot"><button id="openSettings">Settings</button> · <button id="openLog">Playback log</button> · <a href="/lab/">Lock-screen test</a></div>
 </main>
 
 <button class="mini" id="mini" hidden aria-label="Open player">
@@ -919,6 +919,39 @@ $('markBtn').onclick = () => openSheet(el => {
       onclick: () => { closeSheet(); const i = m.sections.findIndex(sec => sec.id === x.sid); if (ready(i)) { describing = null; select(i, x.to); play(); } } }));
     el.append(ul);
   }
+});
+
+$('openSettings').onclick = () => openSheet(async el => {
+  el.innerHTML = `<h2>Settings</h2>
+    <div class="label" style="margin-top:14px">Anthropic API key</div>
+    <div class="sub" id="keyState">Checking…</div>
+    <div class="sub">Used for chapter summaries and for discussing what you've listened to. It's checked with Anthropic, stored privately in your Cloudflare account, and never shown again. Create one at console.anthropic.com › API Keys.</div>
+    <input class="field" id="keyIn" type="password" placeholder="sk-ant-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false">
+    <button class="primary" id="keySave">Save key</button>
+    <button class="filebtn" id="keyRemove" hidden style="border-style:solid">Remove key</button>
+    <div class="msg" id="keyMsg"></div>`;
+  const state = el.querySelector('#keyState'), msg = el.querySelector('#keyMsg');
+  const show = d => {
+    if (d.error) { state.textContent = d.error; return; }
+    state.textContent = d.anthropic.set ? `Connected · key ending ${d.anthropic.last4} ✓` : 'No key yet.';
+    el.querySelector('#keyRemove').hidden = !d.anthropic.set || d.anthropic.source !== 'settings';
+  };
+  const load = async () => { const r = await fetch('/library/_settings' + q, { cache: 'no-store' }); show(await r.json().catch(() => ({ error: 'Couldn’t load settings.' }))); };
+  el.querySelector('#keySave').onclick = async () => {
+    const v = el.querySelector('#keyIn').value.trim();
+    if (!v) return;
+    msg.textContent = 'Checking the key with Anthropic…';
+    const r = await fetch('/library/_settings' + q, { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ anthropicKey: v }) });
+    const d = await r.json().catch(() => ({}));
+    el.querySelector('#keyIn').value = '';
+    msg.textContent = r.ok ? `Saved. Key ending ${d.last4} is working.` : (d.error || 'Couldn’t save the key.');
+    load();
+  };
+  el.querySelector('#keyRemove').onclick = async () => {
+    if (!confirm('Remove the Anthropic API key?')) return;
+    await fetch('/library/_settings' + q, { method: 'DELETE' }); msg.textContent = 'Key removed.'; load();
+  };
+  load();
 });
 
 $('openLog').onclick = () => openSheet(el => {
