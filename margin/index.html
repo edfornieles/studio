@@ -111,6 +111,46 @@ svg:not([fill]) { fill: currentColor; }
 .flag { display: inline-block; margin-top: 8px; font-size: 12px; color: var(--accent); font-weight: 600; }
 .line { margin: 12px auto 0; max-width: 34em; min-height: 4.6em; text-align: center; font: 16px/1.5 var(--serif); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; color: var(--soft); }
 .notice { margin: 12px auto 0; max-width: 30em; text-align: center; font-size: 14px; color: var(--accent); font-weight: 600; }
+.pacts { margin-top: 8px; font-size: 13px; color: var(--soft); }
+.pacts button { color: var(--soft); font-weight: 600; padding: 4px 6px; }
+.pacts i { font-style: normal; opacity: .5; }
+.reflect-prompt { display: block; margin: 8px auto 0; font-size: 13px; font-weight: 600; color: var(--accent); }
+.sumtext { font: 16px/1.6 var(--serif); margin: 10px 0 0; }
+.ideas { margin: 12px 0 0; padding-left: 18px; font-size: 14px; line-height: 1.5; }
+.ideas li { margin: 6px 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.chips span { font-size: 12px; padding: 5px 10px; border-radius: 14px; background: var(--raised); }
+.reflect { position: fixed; inset: 0; background: var(--bg); z-index: 15; transform: translateY(100%); transition: transform .3s cubic-bezier(.2, .8, .2, 1); display: flex; flex-direction: column; }
+.reflect.open { transform: none; }
+.rwrap { flex: 1; overflow-y: auto; max-width: 640px; width: 100%; margin: 0 auto; padding: calc(8px + env(safe-area-inset-top)) 20px 16px; }
+.reflect .ptop .ic { width: 44px; height: 44px; display: grid; place-items: center; color: var(--soft); }
+.reflect .ptop .ic svg { width: 24px; height: 24px; }
+.savenote { font-size: 13px; font-weight: 650; padding: 7px 12px; border-radius: 15px; border: 1px solid var(--faint); }
+.rfchap { font-size: 17px; font-weight: 650; text-align: center; margin-top: 4px; line-height: 1.3; }
+.modes { display: flex; gap: 6px; justify-content: center; margin: 14px 0 4px; }
+.modes button { font-size: 13px; font-weight: 600; padding: 7px 12px; border-radius: 16px; color: var(--soft); background: var(--raised); }
+.modes button.on { background: var(--ink); color: var(--bg); }
+.rfsum { margin-top: 12px; font-size: 14px; color: var(--soft); }
+.rfsum summary { cursor: pointer; font-weight: 600; list-style: none; }
+.rfsum summary::-webkit-details-marker { display: none; }
+.rfsum summary::after { content: " ↓"; }
+.rfsum[open] summary::after { content: " ↑"; }
+.rfsum p { font: 15px/1.55 var(--serif); color: var(--ink); }
+.thread { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; padding-bottom: 8px; }
+.msg-ai, .msg-me { max-width: 88%; padding: 10px 13px; border-radius: 14px; font-size: 15px; line-height: 1.5; white-space: pre-wrap; }
+.msg-ai { align-self: flex-start; background: var(--surface); font-family: var(--serif); font-size: 16px; }
+.msg-me { align-self: flex-end; background: var(--ink); color: var(--bg); }
+.msg-ai .qt { color: var(--accent); text-decoration: underline; text-decoration-style: dotted; text-underline-offset: 3px; font: inherit; text-align: left; }
+.hint { color: var(--soft); font-size: 14px; text-align: center; margin: 18px 10px; line-height: 1.5; }
+.typing { align-self: flex-start; color: var(--soft); font-size: 13px; }
+.composer { display: flex; gap: 8px; align-items: flex-end; max-width: 640px; width: 100%; margin: 0 auto; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--faint); background: var(--bg); }
+.composer textarea { flex: 1; resize: none; max-height: 30svh; font: 16px/1.4 var(--sans); padding: 10px 12px; border-radius: 18px; border: 1px solid var(--faint); background: var(--surface); color: var(--ink); }
+.composer button { width: 40px; height: 40px; border-radius: 50%; background: var(--ink); color: var(--bg); font-size: 18px; font-weight: 700; flex: none; }
+.notesec { margin-top: 16px; }
+.notesec h3 { font-size: 12px; font-weight: 650; letter-spacing: .06em; text-transform: uppercase; color: var(--soft); margin: 0 0 6px; }
+.notesec ul { margin: 0; padding-left: 18px; font-size: 15px; line-height: 1.5; }
+.notesec li { margin: 5px 0; }
+.notesec .yours li { font-family: var(--serif); font-size: 16px; }
 .describe { display: block; margin: 10px auto 0; padding: 8px 16px; border: 1px solid var(--accent); color: var(--accent); border-radius: 20px; font-size: 14px; font-weight: 600; }
 .panel-text { margin: 14px 0 0; padding: 14px 16px; background: var(--surface); border-radius: 12px; font: 15px/1.55 var(--serif); white-space: pre-wrap; }
 .panel-text small { display: block; font: 600 11px/1.3 var(--sans); letter-spacing: .07em; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
@@ -195,8 +235,10 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
       <div class="chap" id="chap"></div>
       <div class="book" id="bookName"></div>
       <span class="flag" id="flag" hidden>◆ Mother suggestion · tap for note</span>
+      <div class="pacts"><button id="sumBtn">Summary</button><i>·</i><button id="reflectBtn">Reflect</button></div>
     </div>
     <p class="notice" id="notice" role="status" hidden></p>
+    <button class="reflect-prompt" id="reflectPrompt" hidden></button>
     <p class="line" id="line"></p>
     <button class="describe" id="describe" hidden>Describe this image</button>
     <div class="panel-text" id="panel" hidden></div>
@@ -219,6 +261,19 @@ pre { font: 11px/1.5 ui-monospace, Menlo, monospace; white-space: pre-wrap; word
       <button id="markBtn"><span id="markIc"></span>Bookmarks</button>
     </div>
   </div>
+</section>
+
+<section class="reflect" id="reflect" aria-label="Reflect">
+  <div class="rwrap">
+    <div class="ptop"><button class="ic" id="rfClose" aria-label="Close"></button><span class="where">Reflect</span><button class="savenote" id="rfSave">Save note</button></div>
+    <div class="rfchap" id="rfChap"></div>
+    <div class="modes" role="tablist">
+      <button data-mode="discuss" role="tab">Discuss</button><button data-mode="rephrase" role="tab">In my words</button><button data-mode="quiz" role="tab">Quiz me</button>
+    </div>
+    <details class="rfsum" id="rfSum"><summary>What you just heard</summary><p id="rfSumText">…</p></details>
+    <div class="thread" id="thread"></div>
+  </div>
+  <div class="composer"><textarea id="rfIn" rows="1" placeholder="Type or dictate…"></textarea><button id="rfSend" aria-label="Send">↑</button></div>
 </section>
 
 <div class="scrim" id="scrim"></div>
@@ -589,6 +644,7 @@ function openBook(id, { show }) {
     setRate(store.get('jabber-rate', 1));
     coverEl(book, $('art')); coverEl(book, $('miniCover'));
     $('bookName').textContent = shortTitle(m.title) + (m.author ? ' · ' + m.author.replace(/^Edited by /, '') : '');
+    loadSummaryLines();
     $('mini').hidden = false;
   }
   if (show) openPlayer();
@@ -653,6 +709,7 @@ audio.addEventListener('ended', () => {
   if (describing) { endDescription(); return; }
   log(`ended ${m.sections[idx].id} (locked: ${document.hidden})`);
   prog(book.id).done[m.sections[idx].id] = true; endSession(); syncProgress(book.id);
+  offerReflect(idx);
   if (sleepEndOfChapter) { sleepEndOfChapter = false; setSleepLabel(); wantPlaying = false; log('sleep: end of chapter'); return; }
   const n = nextReady(idx);
   if (n >= 0) { select(n); play(); log('hand-over → ' + m.sections[n].id); }
@@ -842,7 +899,7 @@ function chaptersSheet() {
       const mark = s.kind === 'notes' ? '◆ Notes' : notesFor(s).length ? '◆ Mother suggestion' : '';
       const heard = p.heard[s.id] || 0;
       const d = !s.file ? 'preparing' : p.done[s.id] ? '✓ ' + human(s.duration) : heard > 15 ? human(s.duration - heard) + ' left' : human(s.duration);
-      row(ul, { n: i + 1, text: s.title, mark, d, cls: (i === idx ? 'on ' : '') + (s.file ? '' : 'wait') + (p.done[s.id] ? ' fin' : ''),
+      row(ul, { n: i + 1, text: s.title, mark, sub: sumLines[s.id]?.line, d, cls: (i === idx ? 'on ' : '') + (s.file ? '' : 'wait') + (p.done[s.id] ? ' fin' : ''),
         onclick: () => { if (!s.file) return; closeSheet(); goChapter(i); } });
     });
     el.append(ul);
@@ -910,6 +967,7 @@ $('markBtn').onclick = () => openSheet(el => {
     });
     el.append(ul);
   }
+  notesSection(el);
   saveLocal(book.id);
   const hist = prog(book.id).history.filter(x => x.to - x.from >= 5).slice(-40).reverse();
   if (hist.length) {
@@ -920,6 +978,196 @@ $('markBtn').onclick = () => openSheet(el => {
     el.append(ul);
   }
 });
+
+// ---------- summaries, overview, Reflect & notes ----------
+// Summaries and conversations come from Claude via the Worker (owner's API key).
+let sumLines = {};
+const enc = encodeURIComponent;
+async function loadSummaryLines() { if (!book) return; try { sumLines = await getJSON(`/library/_ai/summaries/${enc(book.id)}${q}`); } catch { sumLines = {}; } }
+const aiError = e => e.message === 'HTTP 412' ? 'Add an Anthropic API key in Settings (bottom of the Library) to use this.' : `Couldn’t reach the AI (${e.message}).`;
+function addText(parent, tag, cls, text) { const x = document.createElement(tag); if (cls) x.className = cls; x.textContent = text; parent.append(x); return x; }
+function listSection(el, title, items, cls = '') {
+  if (!items?.length) return;
+  const sec = addText(el, 'div', 'notesec ' + cls, '');
+  addText(sec, 'h3', '', title);
+  const ul = addText(sec, 'ul', '', '');
+  for (const it of items) addText(ul, 'li', '', it);
+  return sec;
+}
+
+function summarySheet(i = idx) {
+  const s = m.sections[i];
+  openSheet(async el => {
+    el.innerHTML = '';
+    addText(el, 'h2', '', s.title);
+    addText(el, 'div', 'sub', 'Chapter summary');
+    const p = addText(el, 'p', 'sumtext', 'Writing the summary…');
+    const btn = addText(el, 'button', 'primary', 'Reflect on this chapter');
+    btn.onclick = () => { closeSheet(); openReflect(i); };
+    try {
+      const d = await getJSON(`/library/_ai/summary/${enc(book.id)}/${s.id}${q}`);
+      p.textContent = d.summary;
+      sumLines[s.id] = { line: d.line };
+      const sec = listSection(el, 'Key ideas', d.ideas);
+      el.insertBefore(sec, btn);
+    } catch (e) { p.textContent = aiError(e); }
+    const ns = s.kind === 'notes' ? [] : notesFor(s);
+    if (ns.length) { const n = addText(el, 'div', 'panel-text', ''); addText(n, 'small', '', 'Mother suggestion'); n.append(ns.map(x => x.text.replace(/\n\nStatus:[\s\S]*$/, '')).join('\n\n')); el.insertBefore(n, btn); }
+  });
+}
+$('sumBtn').onclick = () => summarySheet();
+
+function aboutSheet() {
+  openSheet(async el => {
+    el.innerHTML = '';
+    addText(el, 'h2', '', m.title);
+    if (m.author) addText(el, 'div', 'sub', m.author);
+    const p = addText(el, 'p', 'sumtext', 'Writing an overview…');
+    try {
+      const d = await getJSON(`/library/_ai/overview/${enc(book.id)}${q}`);
+      p.textContent = d.overview;
+      if (d.themes?.length) { const sec = addText(el, 'div', 'notesec', ''); addText(sec, 'h3', '', 'Themes'); const c = addText(sec, 'div', 'chips', ''); d.themes.forEach(t => addText(c, 'span', '', t)); }
+      if (d.map?.length) { const sec = addText(el, 'div', 'notesec', ''); addText(sec, 'h3', '', 'Map of the book'); const ul = addText(sec, 'ul', 'rows', ''); d.map.forEach(x => row(ul, { text: x.part, sub: x.line })); }
+    } catch (e) { p.textContent = aiError(e); }
+    notesSection(el);
+  });
+}
+$('bookName').onclick = aboutSheet;
+$('bookName').style.cursor = 'pointer';
+
+// Reflect: a conversation per chapter and mode, kept on this device until saved as a note.
+let rf = null;
+const rfKey = (sid, mode) => `jabber-reflect-${book.id}-${sid}-${mode}`;
+const HINTS = {
+  discuss: 'What struck you, puzzled you or annoyed you? Start anywhere.',
+  rephrase: 'Explain the chapter in your own words. You’ll hear what you caught and what you missed, then try again.',
+  quiz: 'Answer a few questions on the key ideas, in your own words.',
+};
+function openReflect(i = idx, mode = 'discuss') {
+  const s = m.sections[i];
+  rf = { i, sid: s.id, title: s.title, mode };
+  $('rfChap').textContent = s.title;
+  $('rfSumText').textContent = 'Loading…';
+  getJSON(`/library/_ai/summary/${enc(book.id)}/${s.id}${q}`).then(d => { $('rfSumText').textContent = d.summary; }).catch(e => { $('rfSumText').textContent = aiError(e); });
+  setMode(mode);
+  $('reflect').classList.add('open');
+  $('reflectPrompt').hidden = true;
+}
+function setMode(mode) {
+  rf.mode = mode;
+  rf.msgs = store.get(rfKey(rf.sid, mode), []);
+  document.querySelectorAll('.modes button').forEach(b => b.classList.toggle('on', b.dataset.mode === mode));
+  renderThread();
+}
+document.querySelectorAll('.modes button').forEach(b => { b.onclick = () => setMode(b.dataset.mode); });
+function jumpToQuote(quote) {
+  const sec = m.sections[rf.i], norm = t => t.toLowerCase().replace(/[^a-z0-9 ]+/g, '').replace(/\s+/g, ' ').trim();
+  const qn = norm(quote).slice(0, 60);
+  const hit = (sec.sentences || []).find(x => norm(x.text).includes(qn)) || (sec.sentences || []).find(x => qn.includes(norm(x.text).slice(0, 40)));
+  if (!hit) return;
+  $('reflect').classList.remove('open');
+  describing = null; select(rf.i, hit.start); openPlayer(); play();
+}
+function renderThread() {
+  const th = $('thread');
+  th.replaceChildren();
+  if (!rf.msgs.length) {
+    addText(th, 'p', 'hint', HINTS[rf.mode]);
+    if (rf.mode === 'quiz') { const b = addText(th, 'button', 'primary', 'Start'); b.onclick = () => rfSend('Quiz me on this chapter.'); }
+  }
+  for (const msg of rf.msgs) {
+    const b = document.createElement('div');
+    b.className = msg.role === 'assistant' ? 'msg-ai' : 'msg-me';
+    if (msg.role === 'assistant') {
+      // Quotes from the text become links back into the audio.
+      String(msg.content).split(/(“[^”]{12,}”)/).forEach(part => {
+        if (/^“[^”]{12,}”$/.test(part)) { const q2 = document.createElement('button'); q2.className = 'qt'; q2.textContent = part; q2.onclick = () => jumpToQuote(part.slice(1, -1)); b.append(q2); }
+        else b.append(part);
+      });
+    } else b.textContent = msg.content;
+    th.append(b);
+  }
+  if (rf.busy) addText(th, 'div', 'typing', 'Thinking…');
+  if (rf.error) addText(th, 'div', 'typing', rf.error);
+  requestAnimationFrame(() => { const w = document.querySelector('.rwrap'); w.scrollTop = w.scrollHeight; });
+}
+async function rfSend(text) {
+  if (!text.trim() || rf.busy) return;
+  rf.msgs.push({ role: 'user', content: text.trim() });
+  rf.busy = true; rf.error = '';
+  store.set(rfKey(rf.sid, rf.mode), rf.msgs);
+  renderThread();
+  try {
+    const r = await fetch('/library/_ai/chat' + q, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ book: book.id, sid: rf.sid, mode: rf.mode, messages: rf.msgs }) });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(r.status === 412 ? 'HTTP 412' : (d.error || 'HTTP ' + r.status));
+    rf.msgs.push({ role: 'assistant', content: d.reply });
+    store.set(rfKey(rf.sid, rf.mode), rf.msgs);
+  } catch (e) { rf.error = aiError(e); }
+  rf.busy = false;
+  renderThread();
+}
+$('rfSend').onclick = () => { const v = $('rfIn').value; $('rfIn').value = ''; $('rfIn').style.height = ''; rfSend(v); };
+$('rfIn').addEventListener('input', e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 220) + 'px'; });
+$('rfIn').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) $('rfSend').click(); });
+$('rfClose').onclick = () => $('reflect').classList.remove('open');
+$('rfClose').innerHTML = I.down;
+$('reflectBtn').onclick = () => openReflect(idx);
+$('rfSave').onclick = async () => {
+  if (!rf.msgs.some(x => x.role === 'user')) { rf.error = 'Say something first, then save it as a note.'; renderThread(); return; }
+  $('rfSave').textContent = 'Saving…';
+  try {
+    const r = await fetch('/library/_ai/note' + q, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ book: book.id, sid: rf.sid, mode: rf.mode, chapter: rf.title, messages: rf.msgs }) });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error || 'HTTP ' + r.status);
+    store.set(rfKey(rf.sid, rf.mode), []);
+    rf.msgs = [];
+    renderThread();
+    showNote(d);
+  } catch (e) { rf.error = aiError(e); renderThread(); }
+  $('rfSave').textContent = 'Save note';
+};
+
+// After a chapter ends, offer (quietly) to reflect on it.
+let promptTimer = 0;
+function offerReflect(i) {
+  const s = m.sections[i];
+  if (!s || s.kind === 'notes') return;
+  const b = $('reflectPrompt');
+  b.textContent = `Reflect on “${s.title.length > 40 ? s.title.slice(0, 38) + '…' : s.title}”`;
+  b.hidden = false;
+  b.onclick = () => openReflect(i);
+  clearTimeout(promptTimer);
+  promptTimer = setTimeout(() => { b.hidden = true; }, 5 * 60000);
+}
+
+// Notes
+function showNote(n) {
+  openSheet(el => {
+    el.innerHTML = '';
+    addText(el, 'h2', '', n.title);
+    addText(el, 'div', 'sub', `${n.chapter} · ${when(Date.parse(n.date))}`);
+    listSection(el, 'In your words', n.yourWords, 'yours');
+    listSection(el, 'Key ideas', n.ideas);
+    listSection(el, 'Open questions', n.questions);
+    if (n.quotes?.length) {
+      const sec = addText(el, 'div', 'notesec', ''); addText(sec, 'h3', '', 'From the text');
+      const ul = addText(sec, 'ul', '', '');
+      n.quotes.forEach(qt => { const li = addText(ul, 'li', '', ''); const b = document.createElement('button'); b.className = 'qt'; b.style.cssText = 'text-align:left;color:var(--accent)'; b.textContent = `“${qt}”`; b.onclick = () => { closeSheet(); const i = m.sections.findIndex(x => x.id === n.sid); if (i >= 0) { rf = { i, sid: n.sid }; jumpToQuote(qt); } }; li.append(b); });
+    }
+    const del = addText(el, 'button', 'filebtn', 'Delete note'); del.style.borderStyle = 'solid';
+    del.onclick = async () => { if (!confirm('Delete this note?')) return; await fetch(`/library/_ai/notes/${enc(book.id)}/${n.id}${q}`, { method: 'DELETE' }); closeSheet(); };
+  });
+}
+async function notesSection(el) {
+  let notes = [];
+  try { notes = await getJSON(`/library/_ai/notes/${enc(book.id)}${q}`); } catch { return; }
+  if (!notes.length) return;
+  const h = addText(el, 'div', 'label', `Notes · ${notes.length}`);
+  const ul = addText(el, 'ul', 'rows', '');
+  [...notes].reverse().forEach(n => row(ul, { text: n.title, sub: `${n.chapter} · ${when(Date.parse(n.date))}`, onclick: () => showNote(n) }));
+  return h;
+}
 
 $('openSettings').onclick = () => openSheet(async el => {
   el.innerHTML = `<h2>Settings</h2>
@@ -965,7 +1213,7 @@ $('openLog').onclick = () => openSheet(el => {
 document.addEventListener('keydown', e => {
   if (e.target.closest('textarea, input')) return;
   if (e.key === ' ' && m) { e.preventDefault(); audio.paused ? play() : pause(); }
-  if (e.key === 'Escape') { closeSheet(); closePlayer(); }
+  if (e.key === 'Escape') { closeSheet(); if ($('reflect').classList.contains('open')) $('reflect').classList.remove('open'); else closePlayer(); }
 });
 
 log('--- open · home screen: ' + !!(navigator.standalone || matchMedia('(display-mode: standalone)').matches));

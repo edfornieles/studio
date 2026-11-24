@@ -223,6 +223,7 @@ def main():
                 meta["figures"].append({"page": f["page"], "kind": f["kind"], "short": f["short"], "description": f["description"],
                                         "sentence": k, "at": timings[k]["start"], "file": dname, "duration": round(len(dpcm) / drate, 2)})
         side.write_text(json.dumps(meta, ensure_ascii=False))
+        kv_put(ns, prefix + f"text/s{n:02d}.txt", " ".join(t["text"] for t in timings).encode(), "text/plain")  # for summaries & Reflect
         publish_manifest()
         print(f"DONE s{n:02d} {len(pcm) / rate / 60:.1f} min audio in {(time.time() - t0) / 60:.1f} min · {sections[i]['title'][:60]}"
               + (f" · {len(figs)} image(s)" if figs else ""), flush=True)
