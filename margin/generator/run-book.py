@@ -227,6 +227,9 @@ def main():
         publish_manifest()
         print(f"DONE s{n:02d} {len(pcm) / rate / 60:.1f} min audio in {(time.time() - t0) / 60:.1f} min · {sections[i]['title'][:60]}"
               + (f" · {len(figs)} image(s)" if figs else ""), flush=True)
+    # Parallel workers can finish together and overwrite each other's manifest;
+    # publish once more after a pause so the last word includes every section.
+    time.sleep(5)
     publish_manifest()
     print(f"WORKER {args.worker} FINISHED", flush=True)
 
