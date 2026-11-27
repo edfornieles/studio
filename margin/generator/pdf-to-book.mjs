@@ -160,7 +160,7 @@ if (junkTitle(title)) {
     while (j < first.length && first[j].size >= max * 0.9 && parts.join(' ').length < 220) parts.push(first[j++].text);
     title = parts.join(' ').replace(/\s+/g, ' ').replace(/(\p{L})- (\p{Ll})/gu, '$1$2').trim();
     const next = first[j];
-    if (next && next.text.length < 120 && !/^abstract/i.test(next.text)) author = next.text.replace(/\s+/g, ' ').trim();
+    if (next && next.text.length < 120 && !/^abstract/i.test(next.text)) author = next.text.replace(/\s+/g, ' ').replace(/\[\d+\]|\(\d{4}\)/g, '').trim(); // drop footnote markers and "(1958)"
   }
 }
 const book = {
